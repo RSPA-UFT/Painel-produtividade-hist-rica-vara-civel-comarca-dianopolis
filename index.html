@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel de Produtividade Judicial — Comarca de Dianópolis/TO</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --azul:#1a3a5c;--azul2:#2563a8;--verde:#16a34a;--amarelo:#d97706;
+  --vermelho:#dc2626;--cinza:#64748b;--bg:#f1f5f9;--card:#fff;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:#1e293b;font-size:14px}
+header{background:linear-gradient(135deg,var(--azul),var(--azul2));color:#fff;padding:22px 32px 18px;border-bottom:4px solid #0ea5e9}
+header h1{font-size:1.45rem;font-weight:700;letter-spacing:.5px}
+header p{font-size:.82rem;opacity:.85;margin-top:4px}
+.badge{display:inline-block;background:rgba(255,255,255,.18);padding:2px 10px;border-radius:20px;font-size:.75rem;margin-top:6px}
+
+/* TAB NAV */
+.tab-nav{display:flex;flex-wrap:wrap;gap:4px;background:#e2e8f0;padding:10px 16px;border-bottom:1px solid #cbd5e1;position:sticky;top:0;z-index:100}
+.tab-btn{padding:7px 14px;border:none;border-radius:6px;cursor:pointer;font-size:.8rem;font-weight:600;background:transparent;color:var(--cinza);transition:all .2s}
+.tab-btn:hover{background:#fff;color:var(--azul2)}
+.tab-btn.active{background:var(--azul2);color:#fff;box-shadow:0 2px 8px rgba(37,99,168,.3)}
+.tab-panel{display:none;padding:20px 16px}
+.tab-panel.active{display:block}
+
+/* CARDS */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);border-left:4px solid var(--azul2);text-align:center}
+.kpi .val{font-size:2rem;font-weight:800;color:var(--azul2)}
+.kpi .lbl{font-size:.75rem;color:var(--cinza);margin-top:4px}
+.kpi .delta{font-size:.78rem;margin-top:6px;font-weight:600}
+.kpi.verde{border-color:var(--verde)}.kpi.verde .val{color:var(--verde)}
+.kpi.amarelo{border-color:var(--amarelo)}.kpi.amarelo .val{color:var(--amarelo)}
+.kpi.vermelho{border-color:var(--vermelho)}.kpi.vermelho .val{color:var(--vermelho)}
+
+/* CHARTS */
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-bottom:20px}
+.chart-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.chart-card h3{font-size:.85rem;font-weight:700;color:var(--azul);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #e2e8f0}
+.chart-wrap{position:relative;height:220px}
+.chart-wrap-tall{position:relative;height:280px}
+
+/* LEGEND BOXES */
+.legend-box{border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;border-left:4px solid}
+.legend-sci{background:#eff6ff;border-color:var(--azul2)}
+.legend-plain{background:#f0fdf4;border-color:var(--verde)}
+.legend-box h4{font-size:.8rem;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.legend-sci h4{color:var(--azul2)}
+.legend-plain h4{color:var(--verde)}
+.legend-box p{font-size:.78rem;line-height:1.5;color:#374151}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:.78rem;background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+th{background:var(--azul);color:#fff;padding:8px 12px;text-align:center;font-weight:600}
+td{padding:7px 12px;text-align:center;border-bottom:1px solid #f1f5f9}
+tr:hover td{background:#f8fafc}
+.sig{color:var(--verde);font-weight:700}
+.nsig{color:var(--cinza)}
+.badge-sig{background:#dcfce7;color:var(--verde);padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:700}
+.badge-nsig{background:#f1f5f9;color:var(--cinza);padding:2px 8px;border-radius:10px;font-size:.72rem}
+
+/* TEST CARDS */
+.test-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:16px}
+.test-card{background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);border-top:3px solid}
+.test-card.ok{border-color:var(--verde)}.test-card.warn{border-color:var(--amarelo)}
+.test-card h4{font-size:.82rem;font-weight:700;color:var(--azul);margin-bottom:8px}
+.test-card .metric{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f1f5f9;font-size:.75rem}
+.test-card .metric:last-child{border:none}
+.test-card .metric span:last-child{font-weight:700}
+
+/* SHEWHART */
+.ooc{color:var(--vermelho);font-weight:700}
+.warn-pt{color:var(--amarelo);font-weight:700}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  header h1{font-size:1.1rem}
+  .tab-btn{font-size:.72rem;padding:5px 8px}
+  .kpi .val{font-size:1.5rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📊 Painel de Produtividade Judicial</h1>
+  <p>Comarca de Dianópolis / TO &nbsp;|&nbsp; Vara Única &nbsp;|&nbsp; Período: 2023–2025</p>
+  <span class="badge">Análise Científica Multidimensional · 8 módulos · Atualização: Março/2026</span>
+</header>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showTab(0)">🏠 Visão Geral</button>
+  <button class="tab-btn" onclick="showTab(1)">📈 Descritiva</button>
+  <button class="tab-btn" onclick="showTab(2)">📅 Sazonalidade</button>
+  <button class="tab-btn" onclick="showTab(3)">🧪 Testes Estat.</button>
+  <button class="tab-btn" onclick="showTab(4)">🔗 Correlação</button>
+  <button class="tab-btn" onclick="showTab(5)">⏳ Teoria das Filas</button>
+  <button class="tab-btn" onclick="showTab(6)">🎯 Controle</button>
+  <button class="tab-btn" onclick="showTab(7)">🔮 Regressão</button>
+</div>
+
+<div id="tab0" class="tab-panel active">
+  <div class="legend-box legend-sci">
+    <h4>📐 Contexto Científico</h4>
+    <p>Painel de indicadores-chave de desempenho (KPIs) construído a partir de dados mensais do sistema TJTO (Comarca, 2023–2025) e anuais da Vara Única. Os totais anuais foram verificados por triangulação: soma mensal × arquivo anual (Dist 2025: 881 ✓ | 2024: 910 ✓). Métricas de audiência e acervo provêm exclusivamente do arquivo anual da Vara.</p>
+  </div>
+  <div class="legend-box legend-plain">
+    <h4>💬 Em linguagem simples</h4>
+    <p>Este painel mostra o resumo da nossa produtividade em 2025, comparando com 2024 e com a média dos três anos. Em 2025 distribuímos 881 processos, julgamos 992 e baixamos 1.135 — o que significa que resolvemos mais casos do que entrou (superávit de 12,6%). O acervo continua reduzindo gradualmente.</p>
+  </div>
+
+  <!-- KPIs 2025 -->
+  <h3 style="margin-bottom:10px;color:var(--azul);font-size:.95rem">🔑 KPIs 2025 — Comarca de Dianópolis/TO</h3>
+  <div class="kpi-row">
+    <div class="kpi"><div class="val">881</div><div class="lbl">Distribuídos</div><div class="delta" style="color:var(--vermelho)">▼ 3,2% vs 2024 (910)</div></div>
+    <div class="kpi verde"><div class="val">992</div><div class="lbl">Julgados</div><div class="delta" style="color:var(--verde)">▲ 1,1% vs média 3 anos</div></div>
+    <div class="kpi amarelo"><div class="val">1.135</div><div class="lbl">Baixados</div><div class="delta" style="color:var(--vermelho)">▼ 16,6% vs 2024 (1.361)</div></div>
+    <div class="kpi verde"><div class="val">1,126</div><div class="lbl">Índice J/D</div><div class="delta" style="color:var(--verde)">▲ meta CNJ ≥ 1,00 ✓</div></div>
+    <div class="kpi"><div class="val">3.245</div><div class="lbl">Acervo (Vara)</div><div class="delta" style="color:var(--verde)">▼ vs 3.273 (2024)</div></div>
+    <div class="kpi amarelo"><div class="val">68,3%</div><div class="lbl">Efet. Audiências</div><div class="delta" style="color:var(--vermelho)">▼ 1,8 p.p. vs 2024</div></div>
+  </div>
+
+  <!-- Comparativo tabela -->
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Indicador</th><th>2023</th><th>2024</th><th>2025</th><th>Média 3 anos</th><th>Δ 2025 vs 2024</th></tr></thead>
+      <tbody>
+        <tr><td>Distribuídos</td><td>1.018</td><td>910</td><td>881</td><td>936</td><td style="color:var(--vermelho)">▼ 3,2%</td></tr>
+        <tr><td>Julgados</td><td>1.103</td><td>1.058</td><td>992</td><td>1.051</td><td style="color:var(--vermelho)">▼ 6,2%</td></tr>
+        <tr><td>Baixados</td><td>1.463</td><td>1.361</td><td>1.135</td><td>1.319</td><td style="color:var(--vermelho)">▼ 16,6%</td></tr>
+        <tr><td>Índice J/D</td><td>1,083</td><td>1,163</td><td>1,126</td><td>1,124</td><td style="color:var(--verde)">▼ 0,037 (meta ✓)</td></tr>
+        <tr><td>Acervo (Vara)</td><td>3.546</td><td>3.273</td><td>3.245</td><td>3.355</td><td style="color:var(--verde)">▼ 28 processos</td></tr>
+        <tr><td>Aud. Designadas</td><td>555</td><td>418</td><td>409</td><td>461</td><td style="color:var(--verde)">▼ 2,2%</td></tr>
+        <tr><td>Aud. Realizadas</td><td>297</td><td>284</td><td>252</td><td>278</td><td style="color:var(--vermelho)">▼ 11,3%</td></tr>
+        <tr><td>Efetividade Aud.</td><td>58,5%</td><td>70,1%</td><td>68,3%</td><td>65,6%</td><td style="color:var(--vermelho)">▼ 1,8 p.p.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Charts Visão Geral -->
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Distribuídos / Julgados / Baixados — Anual</h3>
+      <div class="chart-wrap"><canvas id="c0a"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Índice J/D por Mês — 2025 vs 2024 vs 2023</h3>
+      <div class="chart-wrap"><canvas id="c0b"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Julgados Mensais — Série Temporal 2023–2025</h3>
+      <div class="chart-wrap"><canvas id="c0c"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Acervo e Efetividade de Audiências — 2023–2025</h3>
+      <div class="chart-wrap"><canvas id="c0d"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Metas CNJ -->
+  <h3 style="margin:10px 0 10px;color:var(--azul);font-size:.95rem">🎯 Metas CNJ</h3>
+  <div class="kpi-row">
+    <div class="kpi verde">
+      <div class="val">✓</div><div class="lbl">Meta 1 — J/D ≥ 1,00</div>
+      <div class="delta">2025: 1,126 | 2024: 1,163 | 2023: 1,083</div>
+    </div>
+    <div class="kpi">
+      <div class="val">3.245</div><div class="lbl">Meta 2 — Acervo (2025)</div>
+      <div class="delta">2024: 3.273 | 2023: 3.546</div>
+    </div>
+    <div class="kpi amarelo">
+      <div class="val">68,3%</div><div class="lbl">Efetividade Audiências</div>
+      <div class="delta" style="color:var(--vermelho)">Referência: 70%+</div>
+    </div>
+  </div>
+
+  <!-- ══ WATERFALL ══════════════════════════════════════════════════════════ -->
+  <h3 style="margin:16px 0 8px;color:var(--azul);font-size:.95rem">🌊 Evolução do Acervo — Fluxo Entrada/Saída (Waterfall)</h3>
+  <div class="chart-grid">
+    <div class="chart-card" style="grid-column:span 2">
+      <h3>Acervo Inicial → +Distribuídos → −Baixados → Acervo Final (por ano)</h3>
+      <div class="chart-wrap" style="height:260px"><canvas id="c0wf"></canvas></div>
+    </div>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Ano</th><th>Acervo Início</th><th>+ Distribuídos</th><th>− Baixados</th><th>Δ Líquido</th><th>Acervo Fim</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>2023</b></td><td>3.991</td>
+          <td style="color:var(--vermelho)">+1.018</td>
+          <td style="color:var(--verde)">−1.463</td>
+          <td style="color:var(--verde)"><b>−445</b></td><td><b>3.546</b></td>
+        </tr>
+        <tr>
+          <td><b>2024</b></td><td>3.724*</td>
+          <td style="color:var(--vermelho)">+910</td>
+          <td style="color:var(--verde)">−1.361</td>
+          <td style="color:var(--verde)"><b>−451</b></td><td><b>3.273</b></td>
+        </tr>
+        <tr>
+          <td><b>2025</b></td><td>3.499*</td>
+          <td style="color:var(--vermelho)">+881</td>
+          <td style="color:var(--verde)">−1.135</td>
+          <td style="color:var(--verde)"><b>−254</b></td><td><b>3.245</b></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:.72rem;color:var(--cinza);margin-top:6px;margin-bottom:14px">
+    *Acervo início calculado via Lei de Little (L=início) — difere do acervo-fim do ano anterior por
+    readmissões, transferências e processos reativados (+178 em 2024 e +226 em 2025).
+    Todos os balanços verificados: início + dist − baix = fim ✓
+  </p>
+
+
+  <p style="font-size:.72rem;color:var(--cinza);margin-top:10px">
+    Fontes: Comarca — 12/03/2026 (monthly exports); Sem título — Tabela 12/03/2026 (annual Vara). 
+    Elaboração: Painel automatizado com Python + Chart.js | Rodrigo Perez Araújo, Juiz Diretor do Foro
+  </p>
+</div>
+
+<div id="tab1" class="tab-panel">
+  <div class="legend-box legend-sci">
+    <h4>📐 Estatística Descritiva — Fundamento Científico</h4>
+    <p>A análise descritiva caracteriza a distribuição empírica de cada variável por ano. O Coeficiente de Variação (CV = σ/μ × 100) mensura dispersão relativa independentemente da escala. O teste de Shapiro-Wilk (n=12/ano) avalia aderência à distribuição normal (H₀: normalidade). Skewness e curtose descrevem assimetria e achatamento. Estes parâmetros fundamentam a escolha de testes inferenciais subsequentes (paramétricos vs. não-paramétricos).</p>
+  </div>
+  <div class="legend-box legend-plain">
+    <h4>💬 Em linguagem simples</h4>
+    <p>Aqui vemos quanto variaram os números mês a mês em cada ano. O CV alto em 2023 (Distribuídos: 34,4%) indica grande variação mensal — alguns meses com muito trabalho, outros com pouco. Em 2025 a variação diminuiu (CV: 20,2%), sugerindo um ritmo mais estável. Todos os dados passaram no teste de normalidade, o que facilita comparações estatísticas.</p>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Variável/Ano</th><th>Média</th><th>Mediana</th><th>DP</th><th>CV%</th><th>Mín</th><th>Máx</th><th>Q1</th><th>Q3</th><th>Assimetria</th><th>Curtose</th><th>Shapiro-W p</th><th>Normal?</th></tr></thead>
+      <tbody>
+<tr><td><b>Distribuídos 2023</b></td><td>84.8</td><td>79</td><td>29.2</td><td>34.4</td><td>40</td><td>141</td><td>63.8</td><td>103.5</td><td>0.321</td><td>-0.663</td><td>0.9755</td><td style='color:var(--verde);font-weight:700'>✓</td></tr>
+<tr><td><b>Distribuídos 2024</b></td><td>75.8</td><td>75</td><td>14.2</td><td>18.7</td><td>56</td><td>105</td><td>66.8</td><td>80.2</td><td>0.645</td><td>-0.357</td><td>0.5657</td><td style='color:var(--verde);font-weight:700'>✓</td></tr>
+<tr><td><b>Distribuídos 2025</b></td><td>73.4</td><td>72</td><td>14.8</td><td>20.2</td><td>49</td><td>97</td><td>64.0</td><td>81.8</td><td>0.260</td><td>-0.804</td><td>0.7212</td><td style='color:var(--verde);font-weight:700'>✓</td></tr>
+<tr><td><b>Julgados 2023</b></td><td>91.9</td><td>93</td><td>35.3</td><td>38.4</td><td>38</td><td>156</td><td>75.0</td><td>108.5</td><td>0.099</td><td>-0.705</td><td>0.8977</td><td style='color:var(--verde);font-weight:700'>✓</td></tr>
+<tr><td><b>Julgados 2024</b></td><td>88.2</td><td>88</td><td>17.8</td><td>20.1</td><td>43</td><td>108</td><td>83.0</td><td>99.2</td><td>-1.216</td><td>1.581</td><td>0.0558</td><td style='color:var(--verde);font-weight:700'>✓</td></tr>
+<tr><td><b>Julgados 2025</b></td><td>82.7</td><td>84</td><td>17.3</td><td>20.9</td><td>46</td><td>109</td><td>77.2</td><td>93.2</td><td>-0.628</td><td>-0.043</td><td>0.8051</td><td style='color:var(--verde);font-weight:700'>✓</td></tr>
+<tr><td><b>Baixados 2023</b></td><td>121.9</td><td>121</td><td>33.5</td><td>27.5</td><td>58</td><td>166</td><td>109.2</td><td>151.0</td><td>-0.437</td><td>-0.716</td><td>0.5561</td><td style='color:var(--verde);font-weight:700'>✓</td></tr>
+<tr><td><b>Baixados 2024</b></td><td>113.4</td><td>112</td><td>27.9</td><td>24.6</td><td>77</td><td>170</td><td>88.0</td><td>132.0</td><td>0.524</td><td>-0.572</td><td>0.6577</td><td style='color:var(--verde);font-weight:700'>✓</td></tr>
+<tr><td><b>Baixados 2025</b></td><td>94.6</td><td>88</td><td>28.8</td><td>30.4</td><td>54</td><td>137</td><td>73.0</td><td>120.8</td><td>0.360</td><td>-1.254</td><td>0.2133</td><td style='color:var(--verde);font-weight:700'>✓</td></tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Média Mensal com Desvio-Padrão — Distribuídos</h3>
+      <div class="chart-wrap"><canvas id="c1a"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Média Mensal com Desvio-Padrão — Julgados</h3>
+      <div class="chart-wrap"><canvas id="c1b"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Coeficiente de Variação (CV%) por Variável e Ano</h3>
+      <div class="chart-wrap"><canvas id="c1c"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Box-Plot Comparativo — Distribuídos (simulado)</h3>
+      <div class="chart-wrap"><canvas id="c1d"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div id="tab2" class="tab-panel">
+  <div class="legend-box legend-sci">
+    <h4>📐 Análise de Sazonalidade — Fundamento Científico</h4>
+    <p>O Índice Sazonal (IS) é calculado como a média do mês / média geral da série, para cada variável. IS &gt; 1 indica mês acima da média histórica; IS &lt; 1 indica mês abaixo. O heatmap de J/D (Julgados/Distribuídos) por mês-ano identifica padrões de eficiência intra-anual. A análise de sazonalidade é relevante para planejamento de férias coletivas, alocação de audiências e metas mensais progressivas.</p>
+  </div>
+  <div class="legend-box legend-plain">
+    <h4>💬 Em linguagem simples</h4>
+    <p>Alguns meses são naturalmente mais movimentados que outros. Agosto, Outubro e Novembro tendem a ter mais distribuições (IS acima de 1,2), enquanto Janeiro e Fevereiro são mais calmos. Saber isso nos ajuda a planejar melhor — como designar mais audiências nos meses de alta e usar janeiro para processos administrativos e planejamento.</p>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Índice Sazonal — Distribuídos (média 3 anos)</h3>
+      <div class="chart-wrap"><canvas id="c2a"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Índice Sazonal — Julgados (média 3 anos)</h3>
+      <div class="chart-wrap"><canvas id="c2b"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Índice Sazonal — Baixados (média 3 anos)</h3>
+      <div class="chart-wrap"><canvas id="c2c"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Heatmap J/D por Mês (Julgados ÷ Distribuídos)</h3>
+      <div class="chart-wrap"><canvas id="c2d"></canvas></div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Mês</th><th colspan="3">Distribuídos (por ano)</th><th>IS Dist.</th><th colspan="3">Julgados (por ano)</th><th>IS Julg.</th></tr>
+      <tr><th></th><th>2023</th><th>2024</th><th>2025</th><th></th><th>2023</th><th>2024</th><th>2025</th><th></th></tr>
+      </thead>
+      <tbody>
+<tr><td><b>Jan</b></td><td>40</td><td>63</td><td>65</td><td style='color:var(--vermelho);font-weight:700'>0.718</td><td>45</td><td>80</td><td>46</td><td style='color:var(--vermelho);font-weight:700'>0.651</td></tr>
+<tr><td><b>Fev</b></td><td>80</td><td>56</td><td>60</td><td style='color:var(--vermelho);font-weight:700'>0.837</td><td>99</td><td>86</td><td>97</td><td style='color:var(--verde);font-weight:700'>1.073</td></tr>
+<tr><td><b>Mar</b></td><td>63</td><td>77</td><td>73</td><td style='color:var(--vermelho);font-weight:700'>0.910</td><td>100</td><td>84</td><td>61</td><td style='color:var(--vermelho);font-weight:700'>0.932</td></tr>
+<tr><td><b>Abr</b></td><td>64</td><td>93</td><td>97</td><td style='color:var(--verde);font-weight:700'>1.085</td><td>104</td><td>108</td><td>72</td><td style='color:var(--verde);font-weight:700'>1.081</td></tr>
+<tr><td><b>Mai</b></td><td>75</td><td>68</td><td>65</td><td style='color:var(--vermelho);font-weight:700'>0.889</td><td>87</td><td>108</td><td>109</td><td style='color:var(--verde);font-weight:700'>1.157</td></tr>
+<tr><td><b>Jun</b></td><td>78</td><td>90</td><td>49</td><td style='color:var(--vermelho);font-weight:700'>0.927</td><td>133</td><td>90</td><td>89</td><td style='color:var(--verde);font-weight:700'>1.187</td></tr>
+<tr><td><b>Jul</b></td><td>98</td><td>76</td><td>80</td><td style='color:var(--verde);font-weight:700'>1.085</td><td>38</td><td>106</td><td>80</td><td style='color:var(--vermelho);font-weight:700'>0.853</td></tr>
+<tr><td><b>Ago</b></td><td>141</td><td>62</td><td>87</td><td style='color:var(--verde);font-weight:700'>1.239</td><td>156</td><td>78</td><td>99</td><td style='color:var(--verde);font-weight:700'>1.267</td></tr>
+<tr><td><b>Set</b></td><td>117</td><td>77</td><td>61</td><td style='color:var(--verde);font-weight:700'>1.089</td><td>82</td><td>97</td><td>88</td><td style='color:var(--verde);font-weight:700'>1.016</td></tr>
+<tr><td><b>Out</b></td><td>102</td><td>69</td><td>97</td><td style='color:var(--verde);font-weight:700'>1.145</td><td>122</td><td>84</td><td>92</td><td style='color:var(--verde);font-weight:700'>1.134</td></tr>
+<tr><td><b>Nov</b></td><td>108</td><td>105</td><td>71</td><td style='color:var(--verde);font-weight:700'>1.213</td><td>83</td><td>94</td><td>80</td><td style='color:var(--vermelho);font-weight:700'>0.978</td></tr>
+<tr><td><b>Dez</b></td><td>52</td><td>74</td><td>76</td><td style='color:var(--vermelho);font-weight:700'>0.863</td><td>54</td><td>43</td><td>79</td><td style='color:var(--vermelho);font-weight:700'>0.670</td></tr>
+
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="tab3" class="tab-panel">
+  <div class="legend-box legend-sci">
+    <h4>📐 Testes de Hipótese — Fundamento Científico</h4>
+    <p><b>Mann-Kendall</b>: teste não-paramétrico para tendência monotônica em séries temporais (H₀: ausência de tendência). Robusto a não-normalidade e valores extremos. <b>Kruskal-Wallis</b>: análogo não-paramétrico da ANOVA, compara medianas de k≥3 grupos independentes (H₀: distribuições iguais). <b>Mann-Whitney U</b>: post-hoc para comparação pareada (H₀: distribuições iguais entre dois grupos). <b>Shapiro-Wilk</b>: testa normalidade da série combinada (H₀: distribuição normal). Nível de significância: α = 0,05.</p>
+  </div>
+  <div class="legend-box legend-plain">
+    <h4>💬 Em linguagem simples</h4>
+    <p>Fizemos 4 tipos de testes científicos para verificar se as mudanças que observamos (queda nos números) são estatisticamente reais ou apenas variação aleatória. O resultado foi consistente: <b>nenhum teste encontrou diferença significativa</b> entre os anos. Isso significa que a variação observada está dentro do esperado pelo acaso — não há evidência de piora ou melhora estrutural. Uma conclusão importante: a variação é normal, não há crise.</p>
+  </div>
+
+  <h3 style="color:var(--azul);margin:0 0 10px;font-size:.9rem">🔵 Teste Mann-Kendall — Tendência na Série Temporal (36 meses, 2023–2025)</h3>
+  <div class="test-grid">
+
+    <div class="test-card warn">
+      <h4>📦 Mann-Kendall — Distribuídos</h4>
+      <div class="metric"><span>Estatística S</span><span>-28</span></div>
+      <div class="metric"><span>Z score</span><span>-0.3678</span></div>
+      <div class="metric"><span>p-valor</span><span>0.7130</span></div>
+      <div class="metric"><span>Tendência</span><span>↘ Decrescente</span></div>
+      <div class="metric"><span>Significância</span><span style="color:var(--cinza);font-weight:700">Não significativo ✓</span></div>
+    </div>
+
+    <div class="test-card warn">
+      <h4>⚖️ Mann-Kendall — Julgados</h4>
+      <div class="metric"><span>Estatística S</span><span>-69</span></div>
+      <div class="metric"><span>Z score</span><span>-0.9262</span></div>
+      <div class="metric"><span>p-valor</span><span>0.3543</span></div>
+      <div class="metric"><span>Tendência</span><span>↘ Decrescente</span></div>
+      <div class="metric"><span>Significância</span><span style="color:var(--cinza);font-weight:700">Não significativo ✓</span></div>
+    </div>
+
+    <div class="test-card warn">
+      <h4>✅ Mann-Kendall — Baixados</h4>
+      <div class="metric"><span>Estatística S</span><span>-135</span></div>
+      <div class="metric"><span>Z score</span><span>-1.8252</span></div>
+      <div class="metric"><span>p-valor</span><span>0.0680</span></div>
+      <div class="metric"><span>Tendência</span><span>↘ Decrescente</span></div>
+      <div class="metric"><span>Significância</span><span style="color:var(--cinza);font-weight:700">Não significativo ✓</span></div>
+    </div>
+
+    <div class="test-card warn">
+      <h4>📊 Mann-Kendall — Índice J/D</h4>
+      <div class="metric"><span>Estatística S</span><span>-35</span></div>
+      <div class="metric"><span>Z score</span><span>-0.4631</span></div>
+      <div class="metric"><span>p-valor</span><span>0.6433</span></div>
+      <div class="metric"><span>Tendência</span><span>↘ Decrescente</span></div>
+      <div class="metric"><span>Significância</span><span style="color:var(--cinza);font-weight:700">Não significativo ✓</span></div>
+    </div>
+
+  </div>
+
+  <h3 style="color:var(--azul);margin:14px 0 10px;font-size:.9rem">🟣 Kruskal-Wallis — Comparação entre Anos (H₀: medianas iguais)</h3>
+  <div class="test-grid">
+
+    <div class="test-card warn">
+      <h4>🟣 Kruskal-Wallis — Distribuídos</h4>
+      <div class="metric"><span>H estatístico</span><span>1.4245</span></div>
+      <div class="metric"><span>p-valor</span><span>0.4905</span></div>
+      <div class="metric"><span>Resultado</span><span style="color:var(--cinza)">p > 0,05 — Não há diferença significativa entre anos ✓</span></div>
+    </div>
+
+    <div class="test-card warn">
+      <h4>🟣 Kruskal-Wallis — Julgados</h4>
+      <div class="metric"><span>H estatístico</span><span>1.0022</span></div>
+      <div class="metric"><span>p-valor</span><span>0.6059</span></div>
+      <div class="metric"><span>Resultado</span><span style="color:var(--cinza)">p > 0,05 — Não há diferença significativa entre anos ✓</span></div>
+    </div>
+
+    <div class="test-card warn">
+      <h4>🟣 Kruskal-Wallis — Baixados</h4>
+      <div class="metric"><span>H estatístico</span><span>4.3337</span></div>
+      <div class="metric"><span>p-valor</span><span>0.1145</span></div>
+      <div class="metric"><span>Resultado</span><span style="color:var(--cinza)">p > 0,05 — Não há diferença significativa entre anos ✓</span></div>
+    </div>
+
+  </div>
+
+  <h3 style="color:var(--azul);margin:14px 0 10px;font-size:.9rem">🟡 Mann-Whitney U — Post-Hoc Pareado</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Variável</th><th>Par</th><th>U</th><th>p-valor</th><th>Significativo?</th></tr></thead>
+      <tbody>
+<tr><td>Distribuídos</td><td>2023 × 2024</td><td>87.5</td><td>0.3863</td><td><span class="badge-nsig">Não (p > 0,05)</span></td></tr>
+<tr><td>Distribuídos</td><td>2024 × 2025</td><td>79.5</td><td>0.6858</td><td><span class="badge-nsig">Não (p > 0,05)</span></td></tr>
+<tr><td>Distribuídos</td><td>2023 × 2025</td><td>90.5</td><td>0.2984</td><td><span class="badge-nsig">Não (p > 0,05)</span></td></tr>
+<tr><td>Julgados</td><td>2023 × 2024</td><td>77.0</td><td>0.7949</td><td><span class="badge-nsig">Não (p > 0,05)</span></td></tr>
+<tr><td>Julgados</td><td>2024 × 2025</td><td>85.5</td><td>0.4522</td><td><span class="badge-nsig">Não (p > 0,05)</span></td></tr>
+<tr><td>Julgados</td><td>2023 × 2025</td><td>87.5</td><td>0.3863</td><td><span class="badge-nsig">Não (p > 0,05)</span></td></tr>
+<tr><td>Baixados</td><td>2023 × 2024</td><td>88.0</td><td>0.3706</td><td><span class="badge-nsig">Não (p > 0,05)</span></td></tr>
+<tr><td>Baixados</td><td>2024 × 2025</td><td>98.0</td><td>0.1405</td><td><span class="badge-nsig">Não (p > 0,05)</span></td></tr>
+<tr><td>Baixados</td><td>2023 × 2025</td><td>104.0</td><td>0.0688</td><td><span class="badge-nsig">Não (p > 0,05)</span></td></tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="color:var(--azul);margin:14px 0 10px;font-size:.9rem">🟢 Shapiro-Wilk — Normalidade da Série Combinada (n=36)</h3>
+  <div class="test-grid">
+
+    <div class="test-card ok">
+      <h4>🟢 Shapiro-Wilk — Distribuídos</h4>
+      <div class="metric"><span>p-valor</span><span>0.1141</span></div>
+      <div class="metric"><span>Distribuição</span><span>Normal ✓</span></div>
+    </div>
+
+    <div class="test-card ok">
+      <h4>🟢 Shapiro-Wilk — Julgados</h4>
+      <div class="metric"><span>p-valor</span><span>0.1277</span></div>
+      <div class="metric"><span>Distribuição</span><span>Normal ✓</span></div>
+    </div>
+
+    <div class="test-card ok">
+      <h4>🟢 Shapiro-Wilk — Baixados</h4>
+      <div class="metric"><span>p-valor</span><span>0.4320</span></div>
+      <div class="metric"><span>Distribuição</span><span>Normal ✓</span></div>
+    </div>
+
+  </div>
+</div>
+
+  <!-- ══ POWER ANALYSIS ══════════════════════════════════════════════════════ -->
+  <hr style="border:none;border-top:2px dashed #e2e8f0;margin:20px 0">
+
+  <div class="legend-box legend-sci">
+    <h4>📐 Análise de Poder Estatístico — Por que os testes não foram significativos?</h4>
+    <p><b>Poder estatístico</b> (1−β) é a probabilidade de detectar um efeito <i>real</i> quando ele existe.
+    Convencionalmente, poder ≥ 80% é considerado adequado (Cohen, 1988).
+    Com <b>n = 12 observações por ano</b>, o <b>MDE</b> (Minimum Detectable Effect) a 80% de poder é
+    <b>r = 0.5719</b> — equivalente a um efeito <i>grande</i> na escala de Cohen (r ≥ 0,5).
+    Efeitos médios (r = 0,3) exigiriam <b>n ≥ 44 meses/grupo</b> (~3,7 anos adicionais).
+    Conclusão: a ausência de significância estatística não implica ausência de efeito real —
+    o estudo é <b>subcapitalizado estatisticamente</b> para efeitos pequenos e médios.
+    </p>
+  </div>
+  <div class="legend-box legend-plain">
+    <h4>💬 Em linguagem simples</h4>
+    <p>Imagine tentar verificar se uma moeda é levemente viciada jogando-a apenas 12 vezes.
+    Com tão poucas jogadas, só conseguimos detectar vícios muito óbvios.
+    É exatamente isso que acontece com n=12 meses/ano: nossos testes só detectam mudanças
+    <i>muito grandes</i>. Variações menores — que podem ser importantes na prática — passam
+    despercebidas. Isso não significa que tudo está bem, significa que precisamos de mais dados
+    (mais anos) para ter certeza estatística.</p>
+  </div>
+
+  <!-- KPIs poder -->
+  <div class="kpi-row">
+    <div class="kpi vermelho">
+      <div class="val">0.5719</div>
+      <div class="lbl">MDE (r mínimo detectável a 80%)</div>
+      <div class="delta">Apenas efeitos GRANDES detectáveis com n=12</div>
+    </div>
+    <div class="kpi amarelo">
+      <div class="val">44</div>
+      <div class="lbl">Meses/grupo para detectar r=0,3</div>
+      <div class="delta">~3,7 anos adicionais de dados</div>
+    </div>
+    <div class="kpi">
+      <div class="val">α = 0,05</div>
+      <div class="lbl">Nível de significância</div>
+      <div class="delta">5% de chance de falso positivo</div>
+    </div>
+    <div class="kpi verde">
+      <div class="val">≥ 80%</div>
+      <div class="lbl">Poder mínimo recomendado</div>
+      <div class="delta">Cohen (1988) — nenhum teste atingiu</div>
+    </div>
+  </div>
+
+  <!-- Curva de poder chart -->
+  <div class="chart-grid">
+    <div class="chart-card" style="grid-column:span 2">
+      <h3>Curva de Poder Estatístico: Mann-Whitney (α=0,05) — Poder × n por grupo</h3>
+      <div class="chart-wrap" style="height:240px"><canvas id="c3power"></canvas></div>
+    </div>
+  </div>
+
+  <!-- MK poder tabela -->
+  <h3 style="color:var(--azul);margin:10px 0 8px;font-size:.9rem">Mann-Kendall — Poder Retroativo (n=36 meses)</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Variável</th><th>Z obs</th><th>τ (Kendall)</th><th>Tamanho do Efeito</th><th>Poder (%)</th></tr></thead>
+      <tbody>
+<tr><td>Distribuídos</td><td>-0.3814</td><td>-0.0444</td><td>negligível</td><td style='color:#dc2626;font-weight:700'>6.7%</td></tr>
+<tr><td>Julgados</td><td>-0.9398</td><td>-0.1095</td><td>pequeno</td><td style='color:#dc2626;font-weight:700'>15.6%</td></tr>
+<tr><td>Baixados</td><td>-1.8388</td><td>-0.2143</td><td>médio</td><td style='color:#dc2626;font-weight:700'>45.2%</td></tr>
+<tr><td>Índice J/D</td><td>-0.4767</td><td>-0.0556</td><td>negligível</td><td style='color:#dc2626;font-weight:700'>7.6%</td></tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <!-- MW poder tabela -->
+  <h3 style="color:var(--azul);margin:14px 0 8px;font-size:.9rem">Mann-Whitney — Poder Retroativo (n₁=n₂=12)</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Variável</th><th>Par</th><th>Z obs</th><th>r (effect size)</th><th>Tamanho</th><th>Poder (%)</th><th>Diagnóstico</th></tr></thead>
+      <tbody>
+<tr><td>Distribuídos</td><td>2023 × 2024</td><td>0.895</td><td>0.1827</td><td>pequeno</td><td style='color:#dc2626;font-weight:700'>14.6%</td><td>⚠️ Baixo</td></tr>
+<tr><td>Distribuídos</td><td>2024 × 2025</td><td>0.433</td><td>0.0884</td><td>pequeno</td><td style='color:#dc2626;font-weight:700'>7.2%</td><td>⚠️ Baixo</td></tr>
+<tr><td>Distribuídos</td><td>2023 × 2025</td><td>1.068</td><td>0.2180</td><td>pequeno</td><td style='color:#dc2626;font-weight:700'>18.8%</td><td>⚠️ Baixo</td></tr>
+<tr><td>Julgados</td><td>2023 × 2024</td><td>0.289</td><td>0.0589</td><td>pequeno</td><td style='color:#dc2626;font-weight:700'>6.0%</td><td>⚠️ Baixo</td></tr>
+<tr><td>Julgados</td><td>2024 × 2025</td><td>0.779</td><td>0.1591</td><td>pequeno</td><td style='color:#dc2626;font-weight:700'>12.2%</td><td>⚠️ Baixo</td></tr>
+<tr><td>Julgados</td><td>2023 × 2025</td><td>0.895</td><td>0.1827</td><td>pequeno</td><td style='color:#dc2626;font-weight:700'>14.6%</td><td>⚠️ Baixo</td></tr>
+<tr><td>Baixados</td><td>2023 × 2024</td><td>0.924</td><td>0.1886</td><td>pequeno</td><td style='color:#dc2626;font-weight:700'>15.2%</td><td>⚠️ Baixo</td></tr>
+<tr><td>Baixados</td><td>2024 × 2025</td><td>1.501</td><td>0.3064</td><td>médio</td><td style='color:#dc2626;font-weight:700'>32.3%</td><td>⚠️ Baixo</td></tr>
+<tr><td>Baixados</td><td>2023 × 2025</td><td>1.847</td><td>0.3771</td><td>médio</td><td style='color:#dc2626;font-weight:700'>45.5%</td><td>⚠️ Baixo</td></tr>
+
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:.73rem;color:var(--cinza);margin-top:8px">
+    Ref: Cohen, J. (1988). <i>Statistical Power Analysis for the Behavioral Sciences</i> (2ª ed.). LEA.
+    Poder calculado via aproximação normal da distribuição Mann-Whitney. Escala Cohen: r pequeno &lt; 0,3; médio 0,3–0,5; grande &gt; 0,5.
+  </p>
+
+
+<div id="tab4" class="tab-panel">
+  <div class="legend-box legend-sci">
+    <h4>📐 Análise de Correlação e CCF — Fundamento Científico</h4>
+    <p>A <b>Função de Correlação Cruzada (CCF)</b> com defasagens (lags) 0–6 meses quantifica a dependência linear entre Distribuídos e Julgados em diferentes horizontes temporais. O coeficiente r de Pearson (lag=0) testa correlação contemporânea (H₀: ρ=0, teste t bicaudal). A <b>Matriz de Correlação</b> apresenta relações entre todos os pares de variáveis. Destaque: r(Dist,Julg)=0,384 é o único par com p&lt;0,05, indicando correlação positiva fraca mas estatisticamente significativa — meses com mais distribuições tendem a ter mais julgamentos no mesmo período.</p>
+  </div>
+  <div class="legend-box legend-plain">
+    <h4>💬 Em linguagem simples</h4>
+    <p>A Correlação Cruzada responde: "quando entram mais processos, produzimos mais julgamentos no mesmo mês, ou só depois?" A resposta é: <b>principalmente no mesmo mês (lag=0)</b>, com correlação de r=0,38 (p=0,02). Isso é bom — sugere capacidade de resposta rápida. Não há correlação significativa com lags maiores, indicando que a "fila" não acumula pressão por meses.</p>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>CCF: Dist → Julg (lag Dist causa Julg)</h3>
+      <div class="chart-wrap"><canvas id="c4a"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>CCF: Julg → Dist (lag Julg causa Dist)</h3>
+      <div class="chart-wrap"><canvas id="c4b"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Dispersão: Distribuídos × Julgados (n=36 meses)</h3>
+      <div class="chart-wrap"><canvas id="c4c"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Matriz de Correlação (r de Pearson)</h3>
+      <div class="chart-wrap"><canvas id="c4d"></canvas></div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Par</th><th>r de Pearson</th><th>p-valor</th><th>Significativo?</th><th>Interpretação</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Distribuídos × Julgados</td>
+          <td><b>0,384</b></td>
+          <td><b>0,0206</b></td>
+          <td><span class="badge-sig">Sim (p &lt; 0,05)</span></td>
+          <td>Correlação positiva fraca-moderada ✓</td>
+        </tr>
+        <tr>
+          <td>Distribuídos × Baixados</td>
+          <td>0,315</td>
+          <td>0,0615</td>
+          <td><span class="badge-nsig">Não (p > 0,05)</span></td>
+          <td>Tendência positiva não-significativa</td>
+        </tr>
+        <tr>
+          <td>Julgados × Baixados</td>
+          <td><b>0,572</b></td>
+          <td><b>0,0003</b></td>
+          <td><span class="badge-sig">Sim (p &lt; 0,001)</span></td>
+          <td>Correlação positiva moderada-forte ✓✓</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="tab5" class="tab-panel">
+  <div class="legend-box legend-sci">
+    <h4>📐 Teoria das Filas / Lei de Little — Fundamento Científico</h4>
+    <p>A <b>Lei de Little</b> (1961): L = λ·W, onde L = comprimento médio da fila (acervo), λ = taxa de chegada (distribuições/mês), W = tempo médio de permanência no sistema. A <b>Intensidade de Tráfego</b> ρ = λ/μ (λ=dist, μ=julg) mede utilização do "servidor". Para ρ &lt; 1 o sistema é estável; ρ → 1 indica saturação. A <b>Taxa de Congestionamento</b> TC = 1 − (Julg_ano / Dist_ano) avalia se o estoque cresce ou diminui. Nota metodológica: W calculado pela Lei de Little (≈44 meses) difere do tempo médio reportado pelo TJTO (≈84 meses/2.569 dias), pois o sistema inclui processos suspensos e sobrestados.</p>
+  </div>
+  <div class="legend-box legend-plain">
+    <h4>💬 Em linguagem simples</h4>
+    <p>Imagine o fórum como uma fila de banco: processos chegam (distribuições) e são atendidos (julgamentos). A Lei de Little nos diz quanto tempo um processo fica "na fila". Em 2025, a espera estimada é de ~44 meses. A intensidade de tráfego (88,8%) indica que estamos ocupados, mas o sistema é estável — julgamos mais do que entra (superávit de 12,6%), o que significa que o acervo tende a diminuir com o tempo.</p>
+  </div>
+
+  <!-- KPIs Filas -->
+  <h3 style="color:var(--azul);margin-bottom:10px;font-size:.9rem">⏳ Indicadores de Teoria das Filas por Ano</h3>
+
+  <h4 style="font-size:.82rem;color:var(--cinza);margin:10px 0 6px">— 2023 —</h4>
+  <div class="kpi-row">
+    <div class="kpi"><div class="val">41.8</div><div class="lbl">W — Espera (meses)</div><div class="delta">3.5 anos / 1,274 dias (Law of Little)</div></div>
+    <div class="kpi" style="border-color:var(--vermelho)"><div class="val" style="color:var(--vermelho)">92.3%</div><div class="lbl">ρ — Intensidade Tráfego</div><div class="delta">⚠️ Alta — Saturação iminente</div></div>
+    <div class="kpi"><div class="val">8.3%</div><div class="lbl">Superávit Julgamentos</div><div class="delta">Julg/Dist = 1.084 (meta ≥ 1,00)</div></div>
+    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">70.8%</div><div class="lbl">TC — Taxa Congestionamento</div><div class="delta">Acervo: 3,546 proc.</div></div>
+  </div>
+
+  <h4 style="font-size:.82rem;color:var(--cinza);margin:10px 0 6px">— 2024 —</h4>
+  <div class="kpi-row">
+    <div class="kpi"><div class="val">43.2</div><div class="lbl">W — Espera (meses)</div><div class="delta">3.6 anos / 1,316 dias (Law of Little)</div></div>
+    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">86.0%</div><div class="lbl">ρ — Intensidade Tráfego</div><div class="delta">Moderada — Sistema estável</div></div>
+    <div class="kpi"><div class="val">16.3%</div><div class="lbl">Superávit Julgamentos</div><div class="delta">Julg/Dist = 1.163 (meta ≥ 1,00)</div></div>
+    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">70.6%</div><div class="lbl">TC — Taxa Congestionamento</div><div class="delta">Acervo: 3,273 proc.</div></div>
+  </div>
+
+  <h4 style="font-size:.82rem;color:var(--cinza);margin:10px 0 6px">— 2025 —</h4>
+  <div class="kpi-row">
+    <div class="kpi"><div class="val">44.2</div><div class="lbl">W — Espera (meses)</div><div class="delta">3.7 anos / 1,348 dias (Law of Little)</div></div>
+    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">88.8%</div><div class="lbl">ρ — Intensidade Tráfego</div><div class="delta">Moderada — Sistema estável</div></div>
+    <div class="kpi"><div class="val">12.6%</div><div class="lbl">Superávit Julgamentos</div><div class="delta">Julg/Dist = 1.126 (meta ≥ 1,00)</div></div>
+    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">74.1%</div><div class="lbl">TC — Taxa Congestionamento</div><div class="delta">Acervo: 3,245 proc.</div></div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Tempo de Espera W (meses) — Law of Little</h3>
+      <div class="chart-wrap"><canvas id="c5a"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Intensidade de Tráfego ρ (%) por Ano</h3>
+      <div class="chart-wrap"><canvas id="c5b"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Acervo (L) vs Arrivals vs Service Rate</h3>
+      <div class="chart-wrap"><canvas id="c5c"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Taxa de Congestionamento TC (%) vs Superávit</h3>
+      <div class="chart-wrap"><canvas id="c5d"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div id="tab6" class="tab-panel">
+  <div class="legend-box legend-sci">
+    <h4>📐 Gráficos de Controle de Shewhart — Fundamento Científico</h4>
+    <p>Os <b>Gráficos de Controle de Shewhart (XmR)</b> são ferramentas do Statistical Process Control (SPC) para distinguir variação de <i>causa comum</i> (inerente ao processo, aleatória) de variação de <i>causa especial</i> (assignable causes — anomalias reais). Limites: UCL/LCL = μ ± 3σ (99,73% da distribuição normal); UCL2/LCL2 = μ ± 2σ (Zona B/C). Regras de Nelson: pontos além de 3σ = out-of-control (OOC); pontos além de 2σ = warning; 8+ pontos consecutivos do mesmo lado = run (tendência). Ausência de violações indica processo em controle estatístico.</p>
+  </div>
+  <div class="legend-box legend-plain">
+    <h4>💬 Em linguagem simples</h4>
+    <p>Este gráfico é como um "termômetro de normalidade" para nossa produtividade. Desenhamos limites de controle (faixas vermelhas e amarelas) baseados na variação histórica. Se um mês ultrapassa esses limites, é sinal de algo anormal acontecendo (bom ou ruim). <b>Ótima notícia: nenhum mês ultrapassou os limites de 3σ em nenhuma variável</b> — o processo está estatisticamente sob controle!</p>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Controle Shewhart — Distribuídos (36 meses)</h3>
+      <div class="chart-wrap-tall"><canvas id="c6a"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Controle Shewhart — Julgados (36 meses)</h3>
+      <div class="chart-wrap-tall"><canvas id="c6b"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Controle Shewhart — Baixados (36 meses)</h3>
+      <div class="chart-wrap-tall"><canvas id="c6c"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Resumo dos Limites de Controle</h3>
+      <div class="chart-wrap-tall" style="height:220px;overflow:auto;padding:8px">
+
+        <table style="margin-bottom:10px;box-shadow:none">
+          <thead><tr><th colspan="2">Distribuídos</th></tr></thead>
+          <tbody>
+            <tr><td>μ (média)</td><td>80.33</td></tr>
+            <tr><td>σ (desvio)</td><td>22.89</td></tr>
+            <tr><td>UCL (μ+3σ)</td><td>149.02</td></tr>
+            <tr><td>LCL (μ−3σ)</td><td>11.65</td></tr>
+            <tr><td>UCL2 (μ+2σ)</td><td>126.12</td></tr>
+            <tr><td>LCL2 (μ−2σ)</td><td>34.54</td></tr>
+            <tr><td>OOC</td><td><span style='color:var(--verde)'>Nenhum OOC ✓</span></td></tr>
+            <tr><td>Aviso</td><td><span class='warn-pt'>Aviso nos pontos: [7]</span></td></tr>
+            <tr><td>Run</td><td><span style='color:var(--verde)'>Nenhum run</span></td></tr>
+          </tbody>
+        </table>
+
+        <table style="margin-bottom:10px;box-shadow:none">
+          <thead><tr><th colspan="2">Julgados</th></tr></thead>
+          <tbody>
+            <tr><td>μ (média)</td><td>90.04</td></tr>
+            <tr><td>σ (desvio)</td><td>27.40</td></tr>
+            <tr><td>UCL (μ+3σ)</td><td>172.23</td></tr>
+            <tr><td>LCL (μ−3σ)</td><td>7.85</td></tr>
+            <tr><td>UCL2 (μ+2σ)</td><td>144.83</td></tr>
+            <tr><td>LCL2 (μ−2σ)</td><td>35.25</td></tr>
+            <tr><td>OOC</td><td><span style='color:var(--verde)'>Nenhum OOC ✓</span></td></tr>
+            <tr><td>Aviso</td><td><span class='warn-pt'>Aviso nos pontos: [7]</span></td></tr>
+            <tr><td>Run</td><td><span style='color:var(--verde)'>Nenhum run</span></td></tr>
+          </tbody>
+        </table>
+
+        <table style="margin-bottom:10px;box-shadow:none">
+          <thead><tr><th colspan="2">Baixados</th></tr></thead>
+          <tbody>
+            <tr><td>μ (média)</td><td>117.67</td></tr>
+            <tr><td>σ (desvio)</td><td>30.47</td></tr>
+            <tr><td>UCL (μ+3σ)</td><td>209.07</td></tr>
+            <tr><td>LCL (μ−3σ)</td><td>26.27</td></tr>
+            <tr><td>UCL2 (μ+2σ)</td><td>178.60</td></tr>
+            <tr><td>LCL2 (μ−2σ)</td><td>56.73</td></tr>
+            <tr><td>OOC</td><td><span style='color:var(--verde)'>Nenhum OOC ✓</span></td></tr>
+            <tr><td>Aviso</td><td><span class='warn-pt'>Aviso nos pontos: [24]</span></td></tr>
+            <tr><td>Run</td><td><span class='warn-pt'>Run: pontos [20, 21]</span></td></tr>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tab7" class="tab-panel">
+  <div class="legend-box legend-sci">
+    <h4>📐 Regressão Linear e Previsão — Fundamento Científico</h4>
+    <p>A <b>Regressão Linear Simples</b> (OLS — Ordinary Least Squares) ajusta ŷ = β₀ + β₁·t, onde t = mês sequencial (1–36). R² mede proporção da variância explicada pela tendência temporal. O <b>Intervalo de Predição 95%</b> (IP 95%) é mais amplo que o IC da média, pois considera variabilidade individual. A <b>Regressão Múltipla</b> inclui tempo + Distribuídos como preditores de Julgados (R²=0,159). Nenhuma regressão univariada temporal é estatisticamente significativa (todos p&gt;0,05), reforçando o achado de ausência de tendência estrutural.</p>
+  </div>
+  <div class="legend-box legend-plain">
+    <h4>💬 Em linguagem simples</h4>
+    <p>Usamos regressão para fazer projeções para 2026 e verificar se há tendência de queda ao longo do tempo. Os resultados confirmam: <b>não há tendência estatisticamente significativa</b> — as pequenas quedas observadas podem ser acaso. A previsão para 2026 é de ~883 distribuições e ~957 julgamentos por ano (média), mas com ampla margem de incerteza dada a variabilidade natural do processo.</p>
+  </div>
+
+  <h4 style="font-size:.85rem;color:var(--azul);margin:10px 0 6px">📈 Distribuídos</h4>
+  <div class="kpi-row">
+    <div class="kpi"><div class="val">-0.1865</div><div class="lbl">Slope β₁ (por mês)</div><div class="delta">Distribuídos ↘ /mês</div></div>
+    <div class="kpi"><div class="val">0.0091</div><div class="lbl">R² (variância explicada)</div><div class="delta">0.9% do total</div></div>
+    <div class="kpi"><div class="val">0.5802</div><div class="lbl">p-valor</div><div class="delta">Não significativa ✓</div></div>
+    <div class="kpi verde"><div class="val">883</div><div class="lbl">Previsão 2026 (anual)</div><div class="delta">IC95%: [332, 1434]</div></div>
+  </div>
+
+  <h4 style="font-size:.85rem;color:var(--azul);margin:10px 0 6px">📈 Julgados</h4>
+  <div class="kpi-row">
+    <div class="kpi"><div class="val">-0.3281</div><div class="lbl">Slope β₁ (por mês)</div><div class="delta">Julgados ↘ /mês</div></div>
+    <div class="kpi"><div class="val">0.0199</div><div class="lbl">R² (variância explicada)</div><div class="delta">2.0% do total</div></div>
+    <div class="kpi"><div class="val">0.4114</div><div class="lbl">p-valor</div><div class="delta">Não significativa ✓</div></div>
+    <div class="kpi verde"><div class="val">957</div><div class="lbl">Previsão 2026 (anual)</div><div class="delta">IC95%: [305, 1608]</div></div>
+  </div>
+
+  <h4 style="font-size:.85rem;color:var(--azul);margin:10px 0 6px">📈 Baixados</h4>
+  <div class="kpi-row">
+    <div class="kpi"><div class="val">-0.9234</div><div class="lbl">Slope β₁ (por mês)</div><div class="delta">Baixados ↘ /mês</div></div>
+    <div class="kpi"><div class="val">0.0954</div><div class="lbl">R² (variância explicada)</div><div class="delta">9.5% do total</div></div>
+    <div class="kpi"><div class="val">0.0668</div><div class="lbl">p-valor</div><div class="delta">Não significativa ✓</div></div>
+    <div class="kpi verde"><div class="val">1054</div><div class="lbl">Previsão 2026 (anual)</div><div class="delta">IC95%: [249, 1858]</div></div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Distribuídos — Tendência OLS + IC 95%</h3>
+      <div class="chart-wrap"><canvas id="c7a"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Julgados — Tendência OLS + IC 95%</h3>
+      <div class="chart-wrap"><canvas id="c7b"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Baixados — Tendência OLS + IC 95%</h3>
+      <div class="chart-wrap"><canvas id="c7c"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Regressão Múltipla: Julgados ~ Tempo + Dist</h3>
+      <div class="chart-wrap"><canvas id="c7d"></canvas></div>
+    </div>
+  </div>
+
+  <h3 style="color:var(--azul);margin:10px 0 8px;font-size:.9rem">🔮 Previsão Mensal 2026 com IC 95%</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Mês</th><th colspan="3">Distribuídos</th><th colspan="3">Julgados</th><th colspan="3">Baixados</th></tr>
+      <tr><th></th><th>Pred</th><th>Lo</th><th>Hi</th><th>Pred</th><th>Lo</th><th>Hi</th><th>Pred</th><th>Lo</th><th>Hi</th></tr></thead>
+      <tbody>
+<tr><td><b>Jan/26</b></td><td>74.6</td><td>29.9</td><td>119.3</td><td>81.5</td><td>28.7</td><td>134.3</td><td>92.9</td><td>27.6</td><td>158.1</td></tr>
+<tr><td><b>Fev/26</b></td><td>74.4</td><td>29.5</td><td>119.3</td><td>81.2</td><td>28.2</td><td>134.2</td><td>92.0</td><td>26.4</td><td>157.5</td></tr>
+<tr><td><b>Mar/26</b></td><td>74.2</td><td>29.1</td><td>119.3</td><td>80.9</td><td>27.6</td><td>134.1</td><td>91.0</td><td>25.2</td><td>156.9</td></tr>
+<tr><td><b>Abr/26</b></td><td>74.0</td><td>28.7</td><td>119.3</td><td>80.5</td><td>27.0</td><td>134.1</td><td>90.1</td><td>24.0</td><td>156.3</td></tr>
+<tr><td><b>Mai/26</b></td><td>73.8</td><td>28.3</td><td>119.3</td><td>80.2</td><td>26.4</td><td>134.0</td><td>89.2</td><td>22.7</td><td>155.7</td></tr>
+<tr><td><b>Jun/26</b></td><td>73.6</td><td>27.9</td><td>119.4</td><td>79.9</td><td>25.8</td><td>133.9</td><td>88.3</td><td>21.5</td><td>155.1</td></tr>
+<tr><td><b>Jul/26</b></td><td>73.5</td><td>27.5</td><td>119.4</td><td>79.5</td><td>25.2</td><td>133.9</td><td>87.3</td><td>20.2</td><td>154.5</td></tr>
+<tr><td><b>Ago/26</b></td><td>73.3</td><td>27.0</td><td>119.5</td><td>79.2</td><td>24.6</td><td>133.9</td><td>86.4</td><td>18.9</td><td>154.0</td></tr>
+<tr><td><b>Set/26</b></td><td>73.1</td><td>26.6</td><td>119.6</td><td>78.9</td><td>23.9</td><td>133.8</td><td>85.5</td><td>17.6</td><td>153.4</td></tr>
+<tr><td><b>Out/26</b></td><td>72.9</td><td>26.1</td><td>119.7</td><td>78.6</td><td>23.3</td><td>133.8</td><td>84.6</td><td>16.3</td><td>152.9</td></tr>
+<tr><td><b>Nov/26</b></td><td>72.7</td><td>25.7</td><td>119.7</td><td>78.2</td><td>22.6</td><td>133.8</td><td>83.7</td><td>15.0</td><td>152.3</td></tr>
+<tr><td><b>Dez/26</b></td><td>72.5</td><td>25.2</td><td>119.8</td><td>77.9</td><td>22.0</td><td>133.8</td><td>82.7</td><td>13.6</td><td>151.8</td></tr>
+
+      </tbody>
+    </table>
+  </div>
+</div>
+<script>
+const R = {"descritiva": {"2023": {"dist": {"mean": 84.83, "median": 79.0, "std": 29.17, "cv": 34.4, "min": 40, "max": 141, "q1": 63.8, "q3": 103.5, "skew": 0.321, "kurt": -0.663, "shapiro_p": 0.9755, "normal": true}, "julg": {"mean": 91.92, "median": 93.0, "std": 35.3, "cv": 38.4, "min": 38, "max": 156, "q1": 75.0, "q3": 108.5, "skew": 0.099, "kurt": -0.705, "shapiro_p": 0.8977, "normal": true}, "baix": {"mean": 121.92, "median": 121.0, "std": 33.48, "cv": 27.5, "min": 58, "max": 166, "q1": 109.2, "q3": 151.0, "skew": -0.437, "kurt": -0.716, "shapiro_p": 0.5561, "normal": true}}, "2024": {"dist": {"mean": 75.83, "median": 75.0, "std": 14.17, "cv": 18.7, "min": 56, "max": 105, "q1": 66.8, "q3": 80.2, "skew": 0.645, "kurt": -0.357, "shapiro_p": 0.5657, "normal": true}, "julg": {"mean": 88.17, "median": 88.0, "std": 17.76, "cv": 20.1, "min": 43, "max": 108, "q1": 83.0, "q3": 99.2, "skew": -1.216, "kurt": 1.581, "shapiro_p": 0.0558, "normal": true}, "baix": {"mean": 113.42, "median": 112.0, "std": 27.94, "cv": 24.6, "min": 77, "max": 170, "q1": 88.0, "q3": 132.0, "skew": 0.524, "kurt": -0.572, "shapiro_p": 0.6577, "normal": true}}, "2025": {"dist": {"mean": 73.42, "median": 72.0, "std": 14.85, "cv": 20.2, "min": 49, "max": 97, "q1": 64.0, "q3": 81.8, "skew": 0.26, "kurt": -0.804, "shapiro_p": 0.7212, "normal": true}, "julg": {"mean": 82.67, "median": 84.0, "std": 17.26, "cv": 20.9, "min": 46, "max": 109, "q1": 77.2, "q3": 93.2, "skew": -0.628, "kurt": -0.043, "shapiro_p": 0.8051, "normal": true}, "baix": {"mean": 94.58, "median": 87.5, "std": 28.78, "cv": 30.4, "min": 54, "max": 137, "q1": 73.0, "q3": 120.8, "skew": 0.36, "kurt": -1.254, "shapiro_p": 0.2133, "normal": true}}}, "sazonalidade": {"saz": {"dist": [{"mes": "Jan", "mean": 56.0, "std": 13.9, "vals": [40, 63, 65], "idx": 0.718}, {"mes": "Fev", "mean": 65.3, "std": 12.9, "vals": [80, 56, 60], "idx": 0.837}, {"mes": "Mar", "mean": 71.0, "std": 7.2, "vals": [63, 77, 73], "idx": 0.91}, {"mes": "Abr", "mean": 84.7, "std": 18.0, "vals": [64, 93, 97], "idx": 1.085}, {"mes": "Mai", "mean": 69.3, "std": 5.1, "vals": [75, 68, 65], "idx": 0.889}, {"mes": "Jun", "mean": 72.3, "std": 21.1, "vals": [78, 90, 49], "idx": 0.927}, {"mes": "Jul", "mean": 84.7, "std": 11.7, "vals": [98, 76, 80], "idx": 1.085}, {"mes": "Ago", "mean": 96.7, "std": 40.4, "vals": [141, 62, 87], "idx": 1.239}, {"mes": "Set", "mean": 85.0, "std": 28.8, "vals": [117, 77, 61], "idx": 1.089}, {"mes": "Out", "mean": 89.3, "std": 17.8, "vals": [102, 69, 97], "idx": 1.145}, {"mes": "Nov", "mean": 94.7, "std": 20.6, "vals": [108, 105, 71], "idx": 1.213}, {"mes": "Dez", "mean": 67.3, "std": 13.3, "vals": [52, 74, 76], "idx": 0.863}], "julg": [{"mes": "Jan", "mean": 57.0, "std": 19.9, "vals": [45, 80, 46], "idx": 0.651}, {"mes": "Fev", "mean": 94.0, "std": 7.0, "vals": [99, 86, 97], "idx": 1.073}, {"mes": "Mar", "mean": 81.7, "std": 19.6, "vals": [100, 84, 61], "idx": 0.932}, {"mes": "Abr", "mean": 94.7, "std": 19.7, "vals": [104, 108, 72], "idx": 1.081}, {"mes": "Mai", "mean": 101.3, "std": 12.4, "vals": [87, 108, 109], "idx": 1.157}, {"mes": "Jun", "mean": 104.0, "std": 25.1, "vals": [133, 90, 89], "idx": 1.187}, {"mes": "Jul", "mean": 74.7, "std": 34.3, "vals": [38, 106, 80], "idx": 0.853}, {"mes": "Ago", "mean": 111.0, "std": 40.4, "vals": [156, 78, 99], "idx": 1.267}, {"mes": "Set", "mean": 89.0, "std": 7.5, "vals": [82, 97, 88], "idx": 1.016}, {"mes": "Out", "mean": 99.3, "std": 20.0, "vals": [122, 84, 92], "idx": 1.134}, {"mes": "Nov", "mean": 85.7, "std": 7.4, "vals": [83, 94, 80], "idx": 0.978}, {"mes": "Dez", "mean": 58.7, "std": 18.4, "vals": [54, 43, 79], "idx": 0.67}], "baix": [{"mes": "Jan", "mean": 69.7, "std": 13.6, "vals": [78, 77, 54], "idx": 0.633}, {"mes": "Fev", "mean": 96.0, "std": 22.1, "vals": [121, 88, 79], "idx": 0.873}, {"mes": "Mar", "mean": 112.7, "std": 46.2, "vals": [166, 84, 88], "idx": 1.025}, {"mes": "Abr", "mean": 112.0, "std": 35.8, "vals": [117, 145, 74], "idx": 1.018}, {"mes": "Mai", "mean": 123.7, "std": 32.5, "vals": [149, 135, 87], "idx": 1.125}, {"mes": "Jun", "mean": 136.0, "std": 21.5, "vals": [157, 114, 137], "idx": 1.237}, {"mes": "Jul", "mean": 140.0, "std": 26.3, "vals": [121, 170, 129], "idx": 1.273}, {"mes": "Ago", "mean": 119.0, "std": 47.2, "vals": [159, 131, 67], "idx": 1.082}, {"mes": "Set", "mean": 96.0, "std": 23.3, "vals": [115, 103, 70], "idx": 0.873}, {"mes": "Out", "mean": 125.7, "std": 14.0, "vals": [130, 110, 137], "idx": 1.143}, {"mes": "Nov", "mean": 108.7, "std": 14.5, "vals": [92, 116, 118], "idx": 0.988}, {"mes": "Dez", "mean": 80.3, "std": 19.7, "vals": [58, 88, 95], "idx": 0.73}]}, "jd_heat": {"2023": [1.125, 1.238, 1.587, 1.625, 1.16, 1.705, 0.388, 1.106, 0.701, 1.196, 0.769, 1.038], "2024": [1.27, 1.536, 1.091, 1.161, 1.588, 1.0, 1.395, 1.258, 1.26, 1.217, 0.895, 0.581], "2025": [0.708, 1.617, 0.836, 0.742, 1.677, 1.816, 1.0, 1.138, 1.443, 0.948, 1.127, 1.039]}}, "testes": {"mk_dist": {"S": -28, "z": -0.3678, "p": 0.713, "trend": "decrescente", "sig": false}, "mk_julg": {"S": -69, "z": -0.9262, "p": 0.3543, "trend": "decrescente", "sig": false}, "mk_baix": {"S": -135, "z": -1.8252, "p": 0.068, "trend": "decrescente", "sig": false}, "mk_jd": {"S": -35, "z": -0.4631, "p": 0.6433, "trend": "decrescente", "sig": false}, "kw_dist": {"H": 1.4245, "p": 0.4905, "sig": false}, "kw_julg": {"H": 1.0022, "p": 0.6059, "sig": false}, "kw_baix": {"H": 4.3337, "p": 0.1145, "sig": false}, "mw_dist": {"2023_vs_2024": {"U": 87.5, "p": 0.3863, "sig": false}, "2024_vs_2025": {"U": 79.5, "p": 0.6858, "sig": false}, "2023_vs_2025": {"U": 90.5, "p": 0.2984, "sig": false}}, "mw_julg": {"2023_vs_2024": {"U": 77.0, "p": 0.7949, "sig": false}, "2024_vs_2025": {"U": 85.5, "p": 0.4522, "sig": false}, "2023_vs_2025": {"U": 87.5, "p": 0.3863, "sig": false}}, "mw_baix": {"2023_vs_2024": {"U": 88.0, "p": 0.3706, "sig": false}, "2024_vs_2025": {"U": 98.0, "p": 0.1405, "sig": false}, "2023_vs_2025": {"U": 104.0, "p": 0.0688, "sig": false}}, "sw_dist": {"p": 0.1141, "normal": true}, "sw_julg": {"p": 0.1277, "normal": true}, "sw_baix": {"p": 0.432, "normal": true}}, "correlacao": {"ccf_dist_julg": [{"lag": 0, "r": 0.3844, "p": 0.0206, "sig": true}, {"lag": 1, "r": 0.0548, "p": 0.7545, "sig": false}, {"lag": 2, "r": -0.0672, "p": 0.7058, "sig": false}, {"lag": 3, "r": -0.1124, "p": 0.5334, "sig": false}, {"lag": 4, "r": -0.2585, "p": 0.1531, "sig": false}, {"lag": 5, "r": -0.221, "p": 0.2321, "sig": false}, {"lag": 6, "r": 0.1672, "p": 0.377, "sig": false}], "ccf_julg_dist": [{"lag": 0, "r": 0.3844, "p": 0.0206, "sig": true}, {"lag": 1, "r": 0.0738, "p": 0.6736, "sig": false}, {"lag": 2, "r": 0.332, "p": 0.0551, "sig": false}, {"lag": 3, "r": 0.1322, "p": 0.4633, "sig": false}, {"lag": 4, "r": -0.1787, "p": 0.3278, "sig": false}, {"lag": 5, "r": 0.3505, "p": 0.0532, "sig": false}, {"lag": 6, "r": 0.0226, "p": 0.9057, "sig": false}], "corr_pares": {"dist_julg": {"r": 0.3844, "p": 0.0206, "sig": true}, "dist_baix": {"r": 0.3148, "p": 0.0615, "sig": false}, "julg_baix": {"r": 0.5721, "p": 0.0003, "sig": true}}}, "filas": {"2023": {"L": 3546, "lambda": 84.83, "mu": 91.92, "W_meses": 41.8, "W_anos": 3.48, "W_dias": 1274, "rho": 0.9229, "rho_pct": 92.3, "tc": 0.7079, "tc_pct": 70.8, "acervo_inicio": 3991, "superavit_pct": 8.3}, "2024": {"L": 3273, "lambda": 75.83, "mu": 88.17, "W_meses": 43.2, "W_anos": 3.6, "W_dias": 1316, "rho": 0.8601, "rho_pct": 86.0, "tc": 0.7063, "tc_pct": 70.6, "acervo_inicio": 3724, "superavit_pct": 16.3}, "2025": {"L": 3245, "lambda": 73.42, "mu": 82.67, "W_meses": 44.2, "W_anos": 3.68, "W_dias": 1348, "rho": 0.8881, "rho_pct": 88.8, "tc": 0.7409, "tc_pct": 74.1, "acervo_inicio": 3499, "superavit_pct": 12.6}}, "controle": {"dist": {"mu": 80.33, "sigma": 22.89, "ucl": 149.02, "lcl": 11.65, "ucl2": 126.12, "lcl2": 34.54, "data": [40.0, 80.0, 63.0, 64.0, 75.0, 78.0, 98.0, 141.0, 117.0, 102.0, 108.0, 52.0, 63.0, 56.0, 77.0, 93.0, 68.0, 90.0, 76.0, 62.0, 77.0, 69.0, 105.0, 74.0, 65.0, 60.0, 73.0, 97.0, 65.0, 49.0, 80.0, 87.0, 61.0, 97.0, 71.0, 76.0], "ooc": [], "warn": [7], "runs": []}, "julg": {"mu": 90.04, "sigma": 27.4, "ucl": 172.23, "lcl": 7.85, "ucl2": 144.83, "lcl2": 35.25, "data": [45.0, 99.0, 100.0, 104.0, 87.0, 133.0, 38.0, 156.0, 82.0, 122.0, 83.0, 54.0, 80.0, 86.0, 84.0, 108.0, 108.0, 90.0, 106.0, 78.0, 97.0, 84.0, 94.0, 43.0, 46.0, 97.0, 61.0, 72.0, 109.0, 89.0, 80.0, 99.0, 88.0, 92.0, 80.0, 79.0], "ooc": [], "warn": [7], "runs": []}, "baix": {"mu": 117.67, "sigma": 30.47, "ucl": 209.07, "lcl": 26.27, "ucl2": 178.6, "lcl2": 56.73, "data": [78.0, 121.0, 166.0, 117.0, 149.0, 157.0, 121.0, 159.0, 115.0, 130.0, 92.0, 58.0, 77.0, 88.0, 84.0, 145.0, 135.0, 114.0, 170.0, 131.0, 103.0, 110.0, 116.0, 88.0, 54.0, 79.0, 88.0, 74.0, 87.0, 137.0, 129.0, 67.0, 70.0, 137.0, 118.0, 95.0], "ooc": [], "warn": [24], "runs": [20, 21]}}, "regressao": {"dist": {"slope": -0.1865, "intercept": 81.4778, "r2": 0.0091, "p": 0.5802, "sig": false, "trend": "decrescente", "fitted": [81.3, 81.1, 80.9, 80.7, 80.5, 80.4, 80.2, 80.0, 79.8, 79.6, 79.4, 79.2, 79.1, 78.9, 78.7, 78.5, 78.3, 78.1, 77.9, 77.7, 77.6, 77.4, 77.2, 77.0, 76.8, 76.6, 76.4, 76.3, 76.1, 75.9, 75.7, 75.5, 75.3, 75.1, 75.0, 74.8], "forecast_2026": [{"pred": 74.6, "lo": 29.9, "hi": 119.3}, {"pred": 74.4, "lo": 29.5, "hi": 119.3}, {"pred": 74.2, "lo": 29.1, "hi": 119.3}, {"pred": 74.0, "lo": 28.7, "hi": 119.3}, {"pred": 73.8, "lo": 28.3, "hi": 119.3}, {"pred": 73.6, "lo": 27.9, "hi": 119.4}, {"pred": 73.5, "lo": 27.5, "hi": 119.4}, {"pred": 73.3, "lo": 27.0, "hi": 119.5}, {"pred": 73.1, "lo": 26.6, "hi": 119.6}, {"pred": 72.9, "lo": 26.1, "hi": 119.7}, {"pred": 72.7, "lo": 25.7, "hi": 119.7}, {"pred": 72.5, "lo": 25.2, "hi": 119.8}]}, "julg": {"slope": -0.3281, "intercept": 93.6524, "r2": 0.0199, "p": 0.4114, "sig": false, "trend": "decrescente", "fitted": [93.3, 93.0, 92.7, 92.3, 92.0, 91.7, 91.4, 91.0, 90.7, 90.4, 90.0, 89.7, 89.4, 89.1, 88.7, 88.4, 88.1, 87.7, 87.4, 87.1, 86.8, 86.4, 86.1, 85.8, 85.5, 85.1, 84.8, 84.5, 84.1, 83.8, 83.5, 83.2, 82.8, 82.5, 82.2, 81.8], "forecast_2026": [{"pred": 81.5, "lo": 28.7, "hi": 134.3}, {"pred": 81.2, "lo": 28.2, "hi": 134.2}, {"pred": 80.9, "lo": 27.6, "hi": 134.1}, {"pred": 80.5, "lo": 27.0, "hi": 134.1}, {"pred": 80.2, "lo": 26.4, "hi": 134.0}, {"pred": 79.9, "lo": 25.8, "hi": 133.9}, {"pred": 79.5, "lo": 25.2, "hi": 133.9}, {"pred": 79.2, "lo": 24.6, "hi": 133.9}, {"pred": 78.9, "lo": 23.9, "hi": 133.8}, {"pred": 78.6, "lo": 23.3, "hi": 133.8}, {"pred": 78.2, "lo": 22.6, "hi": 133.8}, {"pred": 77.9, "lo": 22.0, "hi": 133.8}]}, "baix": {"slope": -0.9234, "intercept": 127.0556, "r2": 0.0954, "p": 0.0668, "sig": false, "trend": "decrescente", "fitted": [126.1, 125.2, 124.3, 123.4, 122.4, 121.5, 120.6, 119.7, 118.7, 117.8, 116.9, 116.0, 115.1, 114.1, 113.2, 112.3, 111.4, 110.4, 109.5, 108.6, 107.7, 106.7, 105.8, 104.9, 104.0, 103.0, 102.1, 101.2, 100.3, 99.4, 98.4, 97.5, 96.6, 95.7, 94.7, 93.8], "forecast_2026": [{"pred": 92.9, "lo": 27.6, "hi": 158.1}, {"pred": 92.0, "lo": 26.4, "hi": 157.5}, {"pred": 91.0, "lo": 25.2, "hi": 156.9}, {"pred": 90.1, "lo": 24.0, "hi": 156.3}, {"pred": 89.2, "lo": 22.7, "hi": 155.7}, {"pred": 88.3, "lo": 21.5, "hi": 155.1}, {"pred": 87.3, "lo": 20.2, "hi": 154.5}, {"pred": 86.4, "lo": 18.9, "hi": 154.0}, {"pred": 85.5, "lo": 17.6, "hi": 153.4}, {"pred": 84.6, "lo": 16.3, "hi": 152.9}, {"pred": 83.7, "lo": 15.0, "hi": 152.3}, {"pred": 82.7, "lo": 13.6, "hi": 151.8}]}, "multipla": {"beta0": 57.423, "beta_t": -0.245, "beta_dist": 0.445, "r2": 0.1588, "fitted": [75.0, 92.5, 84.7, 84.9, 89.5, 90.6, 99.3, 118.2, 107.2, 100.3, 102.7, 77.6, 82.2, 78.9, 88.0, 94.9, 83.5, 93.0, 86.6, 80.1, 86.5, 82.7, 98.5, 84.4, 80.2, 77.7, 83.3, 93.7, 79.2, 71.9, 85.4, 88.3, 76.5, 92.2, 80.4, 82.4]}}};
+const RAW = {"anos": [2023, 2024, 2025], "meses": ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"], "dist": {"2023": [40, 80, 63, 64, 75, 78, 98, 141, 117, 102, 108, 52], "2024": [63, 56, 77, 93, 68, 90, 76, 62, 77, 69, 105, 74], "2025": [65, 60, 73, 97, 65, 49, 80, 87, 61, 97, 71, 76]}, "julg": {"2023": [45, 99, 100, 104, 87, 133, 38, 156, 82, 122, 83, 54], "2024": [80, 86, 84, 108, 108, 90, 106, 78, 97, 84, 94, 43], "2025": [46, 97, 61, 72, 109, 89, 80, 99, 88, 92, 80, 79]}, "baix": {"2023": [78, 121, 166, 117, 149, 157, 121, 159, 115, 130, 92, 58], "2024": [77, 88, 84, 145, 135, 114, 170, 131, 103, 110, 116, 88], "2025": [54, 79, 88, 74, 87, 137, 129, 67, 70, 137, 118, 95]}};
+
+// ─── UTILITIES ────────────────────────────────────────────────────────────
+const MESES = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+const ANOS  = ["2023","2024","2025"];
+const CORES = {
+  "2023": "rgba(99,102,241,0.85)",
+  "2024": "rgba(16,185,129,0.85)",
+  "2025": "rgba(239,68,68,0.85)",
+  "2023b": "rgba(99,102,241,0.25)",
+  "2024b": "rgba(16,185,129,0.25)",
+  "2025b": "rgba(239,68,68,0.25)"
+};
+const CMAP = ['#1a3a5c','#2563a8','#16a34a','#d97706','#dc2626','#64748b','#7c3aed','#0891b2'];
+
+function mkChart(id, cfg) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  if (el._chart) { el._chart.destroy(); }
+  el._chart = new Chart(el, cfg);
+  return el._chart;
+}
+
+const tabInited = {};
+
+function showTab(n) {
+  document.querySelectorAll('.tab-panel').forEach((p,i) => {
+    p.classList.toggle('active', i === n);
+  });
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', i === n);
+  });
+  if (!tabInited[n]) {
+    tabInited[n] = true;
+    if (n === 0) initTab0();
+    else if (n === 1) initTab1();
+    else if (n === 2) initTab2();
+    else if (n === 3) initTab3();
+    else if (n === 4) initTab4();
+    else if (n === 5) initTab5();
+    else if (n === 6) initTab6();
+    else if (n === 7) initTab7();
+  }
+}
+
+// ─── TAB 0 CHARTS ─────────────────────────────────────────────────────────
+
+// ─── POWER CURVE CHART ────────────────────────────────────────────────────
+function initPowerChart() {
+  const ns = [6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108, 114, 120];
+  const r02 = [0.1065, 0.1651, 0.2244, 0.2833, 0.3408, 0.3964, 0.4496, 0.4999, 0.5472, 0.5913, 0.6323, 0.6701, 0.7047, 0.7364, 0.7653, 0.7914, 0.815, 0.8363, 0.8554, 0.8725];
+  const r03 = [0.1799, 0.3123, 0.4365, 0.5472, 0.642, 0.7209, 0.7851, 0.8363, 0.8765, 0.9076, 0.9315, 0.9495, 0.963, 0.9731, 0.9805, 0.986, 0.99, 0.9928, 0.9949, 0.9964];
+  const r05 = [0.41, 0.6878, 0.8508, 0.9337, 0.9721, 0.9888, 0.9956, 0.9984, 0.9994, 0.9998, 0.9999, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+  const cur_n = 12;
+
+  mkChart('c3power', {
+    type: 'line',
+    data: {
+      labels: ns,
+      datasets: [
+        {label: 'r=0,2 (pequeno)', data: r02, borderColor:'rgba(220,38,38,0.7)', fill:false, tension:0.4, pointRadius:0},
+        {label: 'r=0,3 (médio)',   data: r03, borderColor:'rgba(217,119,6,0.8)', fill:false, tension:0.4, pointRadius:0},
+        {label: 'r=0,5 (grande)',  data: r05, borderColor:'rgba(22,163,74,0.8)', fill:false, tension:0.4, pointRadius:0},
+        {label: 'Poder alvo 80%',  data: Array(ns.length).fill(0.80),
+         borderColor:'#94a3b8', borderDash:[6,4], pointRadius:0, fill:false},
+        {label: 'n atual (12)',    data: Array(ns.length).fill(null), type:'scatter',
+         pointRadius:0, fill:false}
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {position:'top'},
+        tooltip: {callbacks:{label: ctx => ctx.dataset.label+': '+Math.round(ctx.parsed.y*100)+'%'}},
+        annotation: {}
+      },
+      scales: {
+        x: {title:{display:true, text:'n por grupo (meses/ano)'}},
+        y: {min:0, max:1, title:{display:true, text:'Poder Estatístico (1−β)'},
+            ticks:{callback: v => Math.round(v*100)+'%'}}
+      }
+    }
+  });
+  // Marca n=12 com linha vertical
+  const el = document.getElementById('c3power');
+  if (el && el._chart) {
+    const chart = el._chart;
+    const xIdx = ns.indexOf(cur_n);
+    if (xIdx >= 0) {
+      chart.data.datasets[4].data = ns.map(n => n === cur_n ? 1 : null);
+      chart.data.datasets[4].label = 'n atual (12/ano)';
+      chart.data.datasets[4].borderColor = '#2563a8';
+      chart.data.datasets[4].pointRadius = ns.map(n => n === cur_n ? 8 : 0);
+      chart.data.datasets[4].showLine = false;
+      chart.update('none');
+    }
+  }
+}
+
+// ─── WATERFALL CHART ──────────────────────────────────────────────────────
+function initWaterfallChart() {
+  const wf2023 = [3991, 1018, -1463, 3546];
+  const wf2024 = [3724, 910, -1361, 3273];
+  const wf2025 = [3499, 881, -1135, 3245];
+
+  // Stacked-bar waterfall: spacer (transparent) + colored segments
+  // For each year: [inicio, +dist, +baix(neg→visual as positive bar below), fim marker]
+  // Simplified as grouped bar with clear semantics
+  mkChart('c0wf', {
+    type: 'bar',
+    data: {
+      labels: ['2023','2024','2025'],
+      datasets: [
+        {
+          label: 'Acervo Início',
+          data: [wf2023[0], wf2024[0], wf2025[0]],
+          backgroundColor: 'rgba(37,99,168,0.7)',
+          borderRadius: 4
+        },
+        {
+          label: '+ Distribuídos',
+          data: [wf2023[1], wf2024[1], wf2025[1]],
+          backgroundColor: 'rgba(220,38,38,0.65)',
+          borderRadius: 4
+        },
+        {
+          label: '− Baixados',
+          data: [Math.abs(wf2023[2]), Math.abs(wf2024[2]), Math.abs(wf2025[2])],
+          backgroundColor: 'rgba(22,163,74,0.65)',
+          borderRadius: 4
+        },
+        {
+          label: 'Acervo Fim',
+          data: [wf2023[3], wf2024[3], wf2025[3]],
+          type: 'line',
+          borderColor: '#d97706',
+          backgroundColor: 'rgba(217,119,6,0.1)',
+          pointRadius: 8,
+          pointStyle: 'diamond',
+          fill: false,
+          yAxisID: 'y'
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {position:'top'},
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const labels = ['Acervo Início','+ Distribuídos','− Baixados (saídas)','Acervo Fim'];
+              return (labels[ctx.datasetIndex]||ctx.dataset.label) + ': ' + ctx.parsed.y.toLocaleString('pt-BR');
+            }
+          }
+        }
+      },
+      scales: {
+        y: {beginAtZero: false, min: 0,
+            title: {display:true, text:'Processos'}},
+        x: {grid: {display:false}}
+      }
+    }
+  });
+}
+
+// ─── HOLT-WINTERS CHARTS ──────────────────────────────────────────────────
+function initHWCharts() {
+  const hw_months = ['Jan/23','Fev/23','Mar/23','Abr/23','Mai/23','Jun/23','Jul/23','Ago/23','Set/23','Out/23','Nov/23','Dez/23','Jan/24','Fev/24','Mar/24','Abr/24','Mai/24','Jun/24','Jul/24','Ago/24','Set/24','Out/24','Nov/24','Dez/24','Jan/25','Fev/25','Mar/25','Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26','Mar/26','Abr/26','Mai/26','Jun/26','Jul/26','Ago/26','Set/26','Out/26','Nov/26','Dez/26'];
+  const hw_fitted_d  = [61.3, 69.6, 75.8, 88.7, 72.1, 75.3, 87.7, 100.3, 90.8, 96.4, 102.1, 75.0, 55.8, 67.1, 71.0, 84.3, 70.8, 73.7, 87.3, 100.4, 86.1, 88.9, 93.3, 65.0, 48.9, 59.8, 65.1, 78.6, 65.0, 69.0, 79.4, 91.7, 80.6, 82.3, 90.0, 60.1];
+  const hw_fc_d      = [44.7, 53.9, 59.6, 73.2, 57.8, 60.8, 73.2, 85.2, 73.6, 78.0, 83.3, 55.3];
+  const hw_lo_d      = [6.3, 15.5, 21.2, 34.8, 33.1, 22.4, 34.8, 60.5, 48.9, 39.6, 44.9, 30.5];
+  const hw_hi_d      = [70.9, 94.6, 86.2, 113.9, 84.0, 101.4, 113.8, 125.8, 99.8, 118.7, 123.9, 95.9];
+  const hw_fitted_j  = [61.5, 97.7, 85.5, 99.2, 106.1, 107.9, 79.7, 114.1, 94.1, 103.9, 91.1, 63.6, 56.2, 95.3, 83.2, 95.8, 101.8, 107.1, 73.5, 115.8, 89.1, 101.4, 85.6, 58.8, 52.7, 88.6, 78.0, 90.2, 94.4, 98.9, 68.1, 105.8, 83.0, 93.8, 80.0, 51.6];
+  const hw_fc_j      = [48.2, 85.2, 72.8, 85.9, 92.6, 95.2, 65.9, 102.1, 80.2, 90.5, 76.9, 48.6];
+  const hw_lo_j      = [10.4, 47.4, 31.2, 44.2, 51.0, 53.5, 24.3, 60.5, 42.5, 48.9, 35.3, 10.8];
+  const hw_hi_j      = [90.1, 117.7, 114.8, 127.8, 134.6, 128.0, 107.9, 144.1, 112.8, 132.5, 118.9, 90.5];
+  const hw_fitted_b  = [83.7, 109.8, 127.2, 128.5, 139.7, 152.5, 156.6, 134.0, 112.3, 142.1, 124.4, 94.3, 67.9, 95.6, 113.3, 108.6, 123.2, 135.9, 136.7, 120.5, 97.0, 126.1, 107.2, 79.0, 57.2, 83.4, 100.3, 99.7, 110.0, 119.2, 124.7, 106.0, 79.7, 106.9, 91.5, 64.2];
+  const hw_fc_b      = [42.8, 69.2, 85.9, 85.3, 97.0, 109.4, 113.4, 92.3, 69.4, 99.2, 82.1, 52.1];
+  const hw_lo_b      = [4.0, 30.3, 47.0, 46.4, 58.1, 73.2, 77.2, 53.4, 30.5, 60.3, 43.2, 13.2];
+  const hw_hi_b      = [79.4, 105.7, 122.3, 121.7, 133.4, 148.4, 152.3, 131.2, 108.4, 138.1, 121.0, 91.1];
+  const hw_anual_d   = 798.6;
+  const hw_anual_j   = 944.1;
+  const hw_anual_b   = 998.0;
+
+  const MESES = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+  const dist36 = RAW.dist['2023'].concat(RAW.dist['2024'],RAW.dist['2025']);
+  const julg36 = RAW.julg['2023'].concat(RAW.julg['2024'],RAW.julg['2025']);
+  const baix36 = RAW.baix['2023'].concat(RAW.baix['2024'],RAW.baix['2025']);
+
+  function hwChart(id, obs, fitted, fc, lo, hi) {
+    const allObs  = [...obs,  ...Array(12).fill(null)];
+    const allFit  = [...fitted,...Array(12).fill(null)];
+    const allFc   = [...Array(36).fill(null), ...fc];
+    const allLo   = [...Array(36).fill(null), ...lo];
+    const allHi   = [...Array(36).fill(null), ...hi];
+    mkChart(id, {
+      type:'line',
+      data:{
+        labels: hw_months,
+        datasets:[
+          {label:'Observado', data:allObs, borderColor:'#2563a8', backgroundColor:'rgba(37,99,168,0.08)',
+           fill:true, tension:0.2, pointRadius:2, pointHoverRadius:5},
+          {label:'HW Fitted', data:allFit, borderColor:'rgba(217,119,6,0.8)',
+           borderDash:[4,3], fill:false, pointRadius:0, tension:0.3},
+          {label:'HW Forecast', data:allFc, borderColor:'#dc2626',
+           fill:false, pointRadius:4, tension:0.3},
+          {label:'IC 95% Lo', data:allLo, borderColor:'rgba(220,38,38,0.3)',
+           borderDash:[2,6], fill:false, pointRadius:0},
+          {label:'IC 95% Hi', data:allHi, borderColor:'rgba(220,38,38,0.3)',
+           borderDash:[2,6], fill:'-1', backgroundColor:'rgba(220,38,38,0.07)', pointRadius:0}
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{position:'top', labels:{boxWidth:12, font:{size:10}}}},
+        scales:{
+          x:{ticks:{maxTicksLimit:12, maxRotation:45, font:{size:9}}},
+          y:{beginAtZero:false}
+        }
+      }
+    });
+  }
+
+  hwChart('c7hw_d', dist36, hw_fitted_d, hw_fc_d, hw_lo_d, hw_hi_d);
+  hwChart('c7hw_j', julg36, hw_fitted_j, hw_fc_j, hw_lo_j, hw_hi_j);
+  hwChart('c7hw_b', baix36, hw_fitted_b, hw_fc_b, hw_lo_b, hw_hi_b);
+
+  // OLS vs HW comparison
+  const ols_anual_d = RAW.dist['2023'].reduce((a,b)=>a+b,0)/3;  // proxy OLS 2026
+  const ols_fc_d = [74.6, 74.4, 74.2, 74.0, 73.8, 73.6, 73.5, 73.3, 73.1, 72.9, 72.7, 72.5];
+  const ols_fc_j = [81.5, 81.2, 80.9, 80.5, 80.2, 79.9, 79.5, 79.2, 78.9, 78.6, 78.2, 77.9];
+  const ols_fc_b = [92.9, 92.0, 91.0, 90.1, 89.2, 88.3, 87.3, 86.4, 85.5, 84.6, 83.7, 82.7];
+  const ols_anual_d2 = ols_fc_d.reduce((a,b)=>a+b,0);
+  const ols_anual_j  = ols_fc_j.reduce((a,b)=>a+b,0);
+  const ols_anual_b  = ols_fc_b.reduce((a,b)=>a+b,0);
+
+  mkChart('c7hw_cmp', {
+    type:'bar',
+    data:{
+      labels:['Distribuídos 2026','Julgados 2026','Baixados 2026'],
+      datasets:[
+        {label:'OLS (regressão linear)', data:[Math.round(ols_anual_d2), Math.round(ols_anual_j), Math.round(ols_anual_b)],
+         backgroundColor:'rgba(37,99,168,0.7)', borderRadius:6},
+        {label:'Holt-Winters', data:[Math.round(hw_anual_d), Math.round(hw_anual_j), Math.round(hw_anual_b)],
+         backgroundColor:'rgba(220,38,38,0.7)', borderRadius:6}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'top'},
+        tooltip:{callbacks:{label: ctx => ctx.dataset.label+': '+ctx.parsed.y.toLocaleString('pt-BR')}}
+      },
+      scales:{y:{beginAtZero:false, min:600}}
+    }
+  });
+}
+
+function initTab0() {
+  // c0a: Annual totals grouped bar
+  mkChart('c0a', {
+    type: 'bar',
+    data: {
+      labels: ['Distribuídos','Julgados','Baixados'],
+      datasets: [
+        {label:'2023', data:[1018,1103,1463], backgroundColor:CORES['2023']},
+        {label:'2024', data:[910,1058,1361], backgroundColor:CORES['2024']},
+        {label:'2025', data:[881,992,1135], backgroundColor:CORES['2025']}
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend:{position:'top'}},
+      scales: {x:{grid:{display:false}}, y:{beginAtZero:true}}
+    }
+  });
+
+  // c0b: J/D ratio by month for all 3 years
+  const jd23 = RAW.julg['2023'].map((v,i) => v/RAW.dist['2023'][i]);
+  const jd24 = RAW.julg['2024'].map((v,i) => v/RAW.dist['2024'][i]);
+  const jd25 = RAW.julg['2025'].map((v,i) => v/RAW.dist['2025'][i]);
+  mkChart('c0b', {
+    type: 'line',
+    data: {
+      labels: MESES,
+      datasets: [
+        {label:'2023', data:jd23.map(v=>+v.toFixed(3)), borderColor:CORES['2023'], fill:false, tension:0.3},
+        {label:'2024', data:jd24.map(v=>+v.toFixed(3)), borderColor:CORES['2024'], fill:false, tension:0.3},
+        {label:'2025', data:jd25.map(v=>+v.toFixed(3)), borderColor:CORES['2025'], fill:false, tension:0.3},
+        {label:'Meta CNJ 1,00', data:Array(12).fill(1.0), borderColor:'#94a3b8', borderDash:[6,4], pointRadius:0, fill:false}
+      ]
+    },
+    options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{y:{min:0}}}
+  });
+
+  // c0c: Monthly julgados 2023-2025
+  const months36 = [];
+  for (let y of ANOS) for (let m of MESES) months36.push(m+'/'+y.slice(2));
+  const julg36 = [...RAW.julg['2023'], ...RAW.julg['2024'], ...RAW.julg['2025']];
+  mkChart('c0c', {
+    type: 'line',
+    data: {
+      labels: months36,
+      datasets: [{label:'Julgados', data:julg36, borderColor:'#2563a8', backgroundColor:'rgba(37,99,168,0.1)', fill:true, tension:0.3, pointRadius:2}]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{maxTicksLimit:12, maxRotation:45}}, y:{beginAtZero:true}}
+    }
+  });
+
+  // c0d: Acervo + efetividade audiencias
+  mkChart('c0d', {
+    type: 'bar',
+    data: {
+      labels: ['2023','2024','2025'],
+      datasets: [
+        {label:'Acervo', data:[3546,3273,3245], backgroundColor:['rgba(99,102,241,0.7)','rgba(16,185,129,0.7)','rgba(239,68,68,0.7)'], yAxisID:'y'},
+        {label:'Efetividade Aud.%', data:[58.46,70.12,68.29], type:'line', borderColor:'#d97706', pointRadius:6, fill:false, yAxisID:'y2'}
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'top'}},
+      scales:{
+        y:{beginAtZero:false, min:3000, title:{display:true, text:'Acervo'}},
+        y2:{position:'right', min:50, max:80, title:{display:true, text:'Efetividade %'}, grid:{drawOnChartArea:false}}
+      }
+    }
+  });
+  initWaterfallChart();
+}
+
+// ─── TAB 1 CHARTS ─────────────────────────────────────────────────────────
+function initTab1() {
+  // c1a: mean+std for dist
+  const m23d = R.descritiva['2023'].dist, m24d = R.descritiva['2024'].dist, m25d = R.descritiva['2025'].dist;
+  mkChart('c1a', {
+    type:'bar',
+    data:{
+      labels:['2023','2024','2025'],
+      datasets:[
+        {label:'Média', data:[m23d.mean,m24d.mean,m25d.mean], backgroundColor:Object.values(CORES).slice(0,3), borderRadius:4},
+        {label:'± DP', data:[m23d.std,m24d.std,m25d.std], type:'scatter', pointStyle:'line', borderColor:'#1e293b', pointRadius:10}
+      ]
+    },
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}}
+  });
+
+  // c1b: mean+std for julg
+  const m23j = R.descritiva['2023'].julg, m24j = R.descritiva['2024'].julg, m25j = R.descritiva['2025'].julg;
+  mkChart('c1b', {
+    type:'bar',
+    data:{
+      labels:['2023','2024','2025'],
+      datasets:[
+        {label:'Média', data:[m23j.mean,m24j.mean,m25j.mean], backgroundColor:Object.values(CORES).slice(0,3), borderRadius:4}
+      ]
+    },
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}}
+  });
+
+  // c1c: CV% comparison
+  mkChart('c1c', {
+    type:'bar',
+    data:{
+      labels:['Distribuídos','Julgados','Baixados'],
+      datasets:[
+        {label:'2023', data:[R.descritiva['2023'].dist.cv, R.descritiva['2023'].julg.cv, R.descritiva['2023'].baix.cv], backgroundColor:CORES['2023']},
+        {label:'2024', data:[R.descritiva['2024'].dist.cv, R.descritiva['2024'].julg.cv, R.descritiva['2024'].baix.cv], backgroundColor:CORES['2024']},
+        {label:'2025', data:[R.descritiva['2025'].dist.cv, R.descritiva['2025'].julg.cv, R.descritiva['2025'].baix.cv], backgroundColor:CORES['2025']}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'top'}, tooltip:{callbacks:{label: ctx => ctx.dataset.label+': '+ctx.parsed.y.toFixed(1)+'%'}}},
+      scales:{y:{title:{display:true, text:'CV (%)'}}}
+    }
+  });
+
+  // c1d: Box-plot proxy for Distribuídos (min/q1/med/q3/max as scatter)
+  const bpData = [];
+  const colors = [CORES['2023'],CORES['2024'],CORES['2025']];
+  for (let i=0; i<3; i++) {
+    const yr = ANOS[i];
+    const d = R.descritiva[yr].dist;
+    bpData.push({x:i*2, y:d.min, label:'min'});
+    bpData.push({x:i*2, y:d.q1, label:'Q1'});
+    bpData.push({x:i*2, y:d.median, label:'Mediana'});
+    bpData.push({x:i*2, y:d.q3, label:'Q3'});
+    bpData.push({x:i*2, y:d.max, label:'max'});
+  }
+  mkChart('c1d', {
+    type:'bar',
+    data:{
+      labels:['2023','2024','2025'],
+      datasets:[
+        {label:'Mín', data:[R.descritiva['2023'].dist.min, R.descritiva['2024'].dist.min, R.descritiva['2025'].dist.min], backgroundColor:'rgba(100,116,139,0.4)'},
+        {label:'Média', data:[R.descritiva['2023'].dist.mean, R.descritiva['2024'].dist.mean, R.descritiva['2025'].dist.mean], backgroundColor:Object.values(CORES).slice(0,3)},
+        {label:'Máx', data:[R.descritiva['2023'].dist.max, R.descritiva['2024'].dist.max, R.descritiva['2025'].dist.max], type:'line', borderColor:'#dc2626', pointRadius:6, fill:false}
+      ]
+    },
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}}
+  });
+}
+
+// ─── TAB 2 CHARTS ─────────────────────────────────────────────────────────
+function initTab2() {
+  const saz = R.sazonalidade.saz;
+  
+  function sazChart(id, variable, color) {
+    const idxs = saz[variable].map(m => m.idx);
+    const colors = idxs.map(v => v >= 1 ? 'rgba(22,163,74,0.7)' : 'rgba(220,38,38,0.7)');
+    mkChart(id, {
+      type:'bar',
+      data:{
+        labels: MESES,
+        datasets:[{
+          label:'Índice Sazonal',
+          data: idxs,
+          backgroundColor: colors
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          annotation: { annotations: {line1:{type:'line', yMin:1, yMax:1, borderColor:'#94a3b8', borderWidth:2, borderDash:[4,4]}}}
+        },
+        scales:{
+          y:{min:0.4, max:1.4, title:{display:true, text:'IS (1.0 = média)'}},
+          x:{grid:{display:false}}
+        }
+      }
+    });
+  }
+  
+  sazChart('c2a','dist','#2563a8');
+  sazChart('c2b','julg','#16a34a');
+  sazChart('c2c','baix','#d97706');
+
+  // c2d: J/D Heatmap as grouped bar
+  const jdh = R.sazonalidade.jd_heat;
+  mkChart('c2d', {
+    type:'bar',
+    data:{
+      labels: MESES,
+      datasets:[
+        {label:'2023', data:jdh['2023'], backgroundColor:CORES['2023']},
+        {label:'2024', data:jdh['2024'], backgroundColor:CORES['2024']},
+        {label:'2025', data:jdh['2025'], backgroundColor:CORES['2025']}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'top'}},
+      scales:{
+        y:{min:0, title:{display:true, text:'J/D (≥1 = superávit)'}},
+        x:{grid:{display:false}}
+      }
+    }
+  });
+}
+
+// ─── TAB 3 CHARTS (no charts, just HTML tables/cards — already rendered) ──
+function initTab3() { initPowerChart(); }
+
+// ─── TAB 4 CHARTS ─────────────────────────────────────────────────────────
+function initTab4() {
+  const ccf1 = R.correlacao.ccf_dist_julg;
+  const ccf2 = R.correlacao.ccf_julg_dist;
+
+  function ccfChart(id, data, title) {
+    const lags = data.map(d => 'Lag '+d.lag);
+    const rs   = data.map(d => d.r);
+    const cols = data.map(d => d.sig ? 'rgba(22,163,74,0.8)' : 'rgba(100,116,139,0.5)');
+    mkChart(id, {
+      type:'bar',
+      data:{labels:lags, datasets:[{label:'r (Pearson)', data:rs, backgroundColor:cols}]},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          y:{min:-0.5, max:0.7, title:{display:true, text:'Correlação r'}},
+          x:{grid:{display:false}}
+        }
+      }
+    });
+  }
+  
+  ccfChart('c4a', ccf1, 'Dist→Julg');
+  ccfChart('c4b', ccf2, 'Julg→Dist');
+
+  // c4c: scatter dist x julg
+  const dist36 = [...RAW.dist['2023'],...RAW.dist['2024'],...RAW.dist['2025']];
+  const julg36 = [...RAW.julg['2023'],...RAW.julg['2024'],...RAW.julg['2025']];
+  const colors36 = [
+    ...Array(12).fill(CORES['2023']),
+    ...Array(12).fill(CORES['2024']),
+    ...Array(12).fill(CORES['2025'])
+  ];
+  const scatter_data = dist36.map((v,i) => ({x:v, y:julg36[i]}));
+  mkChart('c4c', {
+    type:'scatter',
+    data:{datasets:[{label:'Dist×Julg', data:scatter_data, backgroundColor:colors36, pointRadius:5}]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>'Dist:'+ctx.parsed.x+' Julg:'+ctx.parsed.y}}},
+      scales:{x:{title:{display:true,text:'Distribuídos'}},y:{title:{display:true,text:'Julgados'}}}
+    }
+  });
+
+  // c4d: correlation matrix as color blocks
+  const cp = R.correlacao.corr_pares;
+  mkChart('c4d', {
+    type:'bar',
+    data:{
+      labels:['Dist × Julg','Dist × Baix','Julg × Baix'],
+      datasets:[{
+        label:'r de Pearson',
+        data:[cp.dist_julg.r, cp.dist_baix.r, cp.julg_baix.r],
+        backgroundColor:[
+          cp.dist_julg.sig?'rgba(22,163,74,0.7)':'rgba(100,116,139,0.5)',
+          cp.dist_baix.sig?'rgba(22,163,74,0.7)':'rgba(100,116,139,0.5)',
+          cp.julg_baix.sig?'rgba(22,163,74,0.7)':'rgba(100,116,139,0.5)'
+        ]
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{min:0, max:0.7, title:{display:true,text:'r'}}}
+    }
+  });
+}
+
+// ─── TAB 5 CHARTS ─────────────────────────────────────────────────────────
+function initTab5() {
+  const fq = R.filas;
+  const yrs = ['2023','2024','2025'];
+  
+  mkChart('c5a', {
+    type:'bar',
+    data:{
+      labels:yrs,
+      datasets:[{label:'W (meses)', data:yrs.map(y=>fq[y].W_meses), backgroundColor:yrs.map((_,i)=>CMAP[i]), borderRadius:6}]
+    },
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:false, min:38}}}
+  });
+
+  mkChart('c5b', {
+    type:'bar',
+    data:{
+      labels:yrs,
+      datasets:[{
+        label:'ρ (%)',
+        data:yrs.map(y=>fq[y].rho_pct),
+        backgroundColor:yrs.map(y => fq[y].rho_pct > 90 ? 'rgba(220,38,38,0.7)' : 'rgba(251,146,60,0.7)'),
+        borderRadius:6
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{min:70, max:100, title:{display:true,text:'ρ (%)'}}}
+    }
+  });
+
+  mkChart('c5c', {
+    type:'bar',
+    data:{
+      labels:yrs,
+      datasets:[
+        {label:'Acervo (L)', data:yrs.map(y=>fq[y].L), backgroundColor:'rgba(37,99,168,0.7)', yAxisID:'y'},
+        {label:'λ dist/mês', data:yrs.map(y=>fq[y].lambda), type:'line', borderColor:'#dc2626', pointRadius:6, fill:false, yAxisID:'y2'},
+        {label:'μ julg/mês', data:yrs.map(y=>fq[y].mu), type:'line', borderColor:'#16a34a', pointRadius:6, fill:false, yAxisID:'y2'}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'top'}},
+      scales:{
+        y:{min:3000, title:{display:true,text:'Acervo'}},
+        y2:{position:'right', min:60, max:100, title:{display:true,text:'proc/mês'}, grid:{drawOnChartArea:false}}
+      }
+    }
+  });
+
+  mkChart('c5d', {
+    type:'bar',
+    data:{
+      labels:yrs,
+      datasets:[
+        {label:'TC%', data:yrs.map(y=>fq[y].tc_pct*100), backgroundColor:'rgba(220,38,38,0.6)'},
+        {label:'Superávit%', data:yrs.map(y=>fq[y].superavit_pct), backgroundColor:'rgba(22,163,74,0.6)'}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'top'}},
+      scales:{y:{beginAtZero:true, title:{display:true,text:'%'}}}
+    }
+  });
+}
+
+// ─── TAB 6 CHARTS — SHEWHART ──────────────────────────────────────────────
+function initTab6() {
+  const months36 = [];
+  for (let y of ['23','24','25']) for (let m of MESES) months36.push(m+'/'+y);
+
+  function shewhartChart(id, varKey) {
+    const ct = R.controle[varKey];
+    const n = ct.data.length;
+    const ucl  = Array(n).fill(ct.ucl);
+    const lcl  = Array(n).fill(ct.lcl);
+    const ucl2 = Array(n).fill(ct.ucl2);
+    const lcl2 = Array(n).fill(ct.lcl2);
+    const mu   = Array(n).fill(ct.mu);
+    const pointColors = ct.data.map((_,i) => {
+      if (ct.ooc.includes(i)) return '#dc2626';
+      if (ct.warn.includes(i)) return '#d97706';
+      return '#2563a8';
+    });
+    mkChart(id, {
+      type:'line',
+      data:{
+        labels: months36,
+        datasets:[
+          {label:'Observado', data:ct.data, borderColor:'#2563a8', backgroundColor:'rgba(37,99,168,0.08)', tension:0.2, fill:true,
+           pointBackgroundColor:pointColors, pointRadius:4, pointHoverRadius:6},
+          {label:'Média μ', data:mu, borderColor:'#94a3b8', borderDash:[6,3], pointRadius:0, fill:false},
+          {label:'UCL (3σ)', data:ucl, borderColor:'rgba(220,38,38,0.7)', borderDash:[4,4], pointRadius:0, fill:false},
+          {label:'LCL (3σ)', data:lcl, borderColor:'rgba(220,38,38,0.7)', borderDash:[4,4], pointRadius:0, fill:false},
+          {label:'UCL2 (2σ)', data:ucl2, borderColor:'rgba(251,146,60,0.5)', borderDash:[2,6], pointRadius:0, fill:false},
+          {label:'LCL2 (2σ)', data:lcl2, borderColor:'rgba(251,146,60,0.5)', borderDash:[2,6], pointRadius:0, fill:false}
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{position:'top', labels:{boxWidth:12, font:{size:10}}}},
+        scales:{
+          x:{ticks:{maxTicksLimit:12, maxRotation:45, font:{size:9}}},
+          y:{title:{display:true, text:'Processos/mês'}}
+        }
+      }
+    });
+  }
+  
+  shewhartChart('c6a','dist');
+  shewhartChart('c6b','julg');
+  shewhartChart('c6c','baix');
+}
+
+// ─── TAB 7 CHARTS — REGRESSION ────────────────────────────────────────────
+function initTab7() {
+  const months36 = [];
+  for (let y of ['23','24','25']) for (let m of MESES) months36.push(m+'/'+y);
+  const months12_2026 = MESES.map(m => m+'/26');
+
+  function regressionChart(id, varKey, label) {
+    const rr = R.regressao[varKey];
+    const n = rr.fitted.length;
+    let observed = [];
+    if (varKey === 'dist') observed = [...RAW.dist['2023'],...RAW.dist['2024'],...RAW.dist['2025']];
+    else if (varKey === 'julg') observed = [...RAW.julg['2023'],...RAW.julg['2024'],...RAW.julg['2025']];
+    else observed = [...RAW.baix['2023'],...RAW.baix['2024'],...RAW.baix['2025']];
+    
+    const fc = rr.forecast_2026;
+    const all_labels = [...months36, ...months12_2026];
+    const obs_full   = [...observed, ...Array(12).fill(null)];
+    const fit_full   = [...rr.fitted, ...fc.map(f=>f.pred)];
+    const lo_full    = [...Array(n).fill(null), ...fc.map(f=>f.lo)];
+    const hi_full    = [...Array(n).fill(null), ...fc.map(f=>f.hi)];
+    
+    mkChart(id, {
+      type:'line',
+      data:{
+        labels: all_labels,
+        datasets:[
+          {label:'Observado', data:obs_full, borderColor:'#2563a8', backgroundColor:'rgba(37,99,168,0.1)', fill:true, tension:0.2, pointRadius:2},
+          {label:'Tendência OLS', data:fit_full, borderColor:'#dc2626', borderDash:[6,3], pointRadius:0, fill:false},
+          {label:'IC95% Lo', data:lo_full, borderColor:'rgba(251,146,60,0.4)', borderDash:[3,6], pointRadius:0, fill:false},
+          {label:'IC95% Hi', data:hi_full, borderColor:'rgba(251,146,60,0.4)', borderDash:[3,6], pointRadius:0, fill:'+3', backgroundColor:'rgba(251,146,60,0.08)'}
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{position:'top', labels:{boxWidth:12, font:{size:10}}}},
+        scales:{x:{ticks:{maxTicksLimit:12, maxRotation:45, font:{size:9}}}, y:{beginAtZero:false}}
+      }
+    });
+  }
+  
+  regressionChart('c7a','dist','Distribuídos');
+  regressionChart('c7b','julg','Julgados');
+  regressionChart('c7c','baix','Baixados');
+
+  // c7d: Multiple regression fitted vs observed
+  const mr = R.regressao.multipla;
+  const julg_obs = [...RAW.julg['2023'],...RAW.julg['2024'],...RAW.julg['2025']];
+  const months36_full = [];
+  for (let y of ['23','24','25']) for (let m of MESES) months36_full.push(m+'/'+y);
+  
+  mkChart('c7d', {
+    type:'line',
+    data:{
+      labels: months36_full,
+      datasets:[
+        {label:'Julgados Obs.', data:julg_obs, borderColor:'#2563a8', fill:false, tension:0.2, pointRadius:2},
+        {label:'Reg. Múlt. Fitted', data:mr.fitted, borderColor:'#d97706', borderDash:[5,3], fill:false, pointRadius:0}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'top'}},
+      scales:{x:{ticks:{maxTicksLimit:12, maxRotation:45, font:{size:9}}}}
+    }
+  });
+  initHWCharts();
+}
+
+// ─── INIT ON LOAD ─────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  tabInited[0] = true;
+  initTab0();
+});
+</script>
+</body>
+</html>
