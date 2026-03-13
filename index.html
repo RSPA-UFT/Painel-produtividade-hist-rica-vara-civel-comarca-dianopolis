@@ -94,8 +94,7 @@ tr:hover td{background:#f8fafc}
 <div class="tab-nav">
   <button class="tab-btn active" onclick="showTab(0)">📊 Visão Geral</button>
   <button class="tab-btn" onclick="showTab(1)">⏳ Fluxo e Gargalos</button>
-  <button class="tab-btn" style="background:linear-gradient(135deg, #E8A811, #B3820D); /* Dourado TJTO Highlight */ color:white;" onclick="showTab(2)">🤖 IA Estratégica</button>
-  <button class="tab-btn" onclick="showTab(3)">🧪 Laboratório Técnico</button>
+  <button class="tab-btn" onclick="showTab(2)">🧪 Laboratório Técnico</button>
 </div>
 
 <div id="tab0" class="tab-panel active">
@@ -361,21 +360,6 @@ tr:hover td{background:#f8fafc}
 </div>
 
 <div id="tab2" class="tab-panel">
-
-  <div class="legend-box" style="background:#f5f3ff; border-color:#003B70;">
-    <h4 style="color:#003B70">🤖 Inteligência Artificial — Análise Estratégica</h4>
-    <p>Este módulo compila a interpretação descritiva do LLM (Gemini 1.5 Pro) gerada a partir do backend restrito pelo gabinete. A análise abaixo aponta padrões complexos, desvios e sugestões de foco na gestão judiciária, com base nos indicadores numéricos vigentes.</p>
-  </div>
-
-  <div id="ai-result-card" class="chart-card" style="line-height:1.6; color:#334155; font-size:0.95rem; margin-bottom: 20px;">
-    <h3 style="border-bottom-color:#003B70">📄 Relatório de Análise Técnica</h3>
-    <div id="ai-response-text" style="white-space: pre-wrap; margin-top:15px;">
-      <i>A síntese estratégica será injetada nesta seção via backend local antes da atualização periódica no servidor público.</i>
-    </div>
-  </div>
-</div>
-
-<div id="tab3" class="tab-panel">
   <div class="legend-box" style="background:#f4f6f8; border-color:var(--amarelo);">
     <h4 style="color:var(--azul)">🔬 Por que um "Laboratório"?</h4>
     <p>Todos os cálculos que embasam as conclusões gerenciais estão expostos aqui por transparência metodológica. Eles servem não para o dia a dia, mas para assegurar a rigidez científica das decisões da Justiça, eliminando o "achismo" gerencial.</p>
@@ -704,7 +688,7 @@ tr:hover td{background:#f8fafc}
   </p>
 
 
-<div id="tab4" class="tab-panel">
+<!-- Seção 4 unificada no Laboratório Técnico -->
   <div class="legend-box legend-sci">
     <h4>📐 Análise de Correlação e CCF — Fundamento Científico</h4>
     <p>A <b>Função de Correlação Cruzada (CCF)</b> com defasagens (lags) 0–6 meses quantifica a dependência linear entre Distribuídos e Julgados em diferentes horizontes temporais. O coeficiente r de Pearson (lag=0) testa correlação contemporânea (H₀: ρ=0, teste t bicaudal). A <b>Matriz de Correlação</b> apresenta relações entre todos os pares de variáveis. Destaque: r(Dist,Julg)=0,384 é o único par com p&lt;0,05, indicando correlação positiva fraca mas estatisticamente significativa — meses com mais distribuições tendem a ter mais julgamentos no mesmo período.</p>
@@ -939,47 +923,24 @@ function showTab(n) {
   });
   if (!tabInited[n]) {
     tabInited[n] = true;
-    if (n === 0) initTab0();
-    else if (n === 1) initTab1();
-    else if (n === 2) initTab2();
-    else if (n === 3) initTab3();
-    else if (n === 4) initTab4();
-    else if (n === 5) initTab5();
-    else if (n === 6) initTab6();
-    else if (n === 7) initTab7();
-    else if (n === 8) initTab8();
+    if (n === 0) {
+      initTab0();
+    } else if (n === 1) {
+      // Fluxo e Gargalos
+      if(typeof initTab5 === 'function') initTab5(); // Teoria das Filas
+      if(typeof initTab6 === 'function') initTab6(); // Gráficos de Controle (Shewhart)
+    } else if (n === 2) {
+      // Laboratório Técnico
+      if(typeof initTab1 === 'function') initTab1(); // Estatística Descritiva
+      if(typeof initTab2 === 'function') initTab2(); // Sazonalidade
+      if(typeof initTab3 === 'function') initTab3(); // Poder Estatístico
+      if(typeof initTab4 === 'function') initTab4(); // Correlações
+      if(typeof initTab7 === 'function') initTab7(); // Regressões HW
+    }
   }
 }
 
-async function generateAIInsights() {
-  const btn = document.getElementById('ai-btn');
-  const loading = document.getElementById('ai-loading');
-  const resultCard = document.getElementById('ai-result-card');
-  const responseText = document.getElementById('ai-response-text');
-
-  btn.style.display = 'none';
-  loading.style.display = 'block';
-  resultCard.style.display = 'none';
-
-  try {
-    const response = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(R)
-    });
-
-    if (!response.ok) throw new Error('Falha na comunicação com o servidor backend local. Certifique-se de que o server.py está rodando.');
-
-    const data = await response.json();
-    responseText.innerText = data.analysis;
-    resultCard.style.display = 'block';
-  } catch (err) {
-    alert('Erro: ' + err.message);
-    btn.style.display = 'inline-block';
-  } finally {
-    loading.style.display = 'none';
-  }
-}
+// Função API obsoleta removida
 
 function initTab8() {
   // Inicialização opcional para a aba de IA
