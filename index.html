@@ -83,6 +83,13 @@ tr:hover td{background:#f8fafc}
   .kpi .val{font-size:1.5rem}
 }
 </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/generative-ai": "https://esm.run/@google/generative-ai"
+      }
+    }
+  </script>
 </head>
 <body>
 
@@ -95,6 +102,20 @@ tr:hover td{background:#f8fafc}
   <button class="tab-btn" onclick="showTab(1)">⏳ Fluxo e Gargalos</button>
   <button class="tab-btn" style="background:linear-gradient(135deg, #7c3aed, #2563a8); color:white;" onclick="showTab(2)">🤖 IA Estratégica</button>
   <button class="tab-btn" onclick="showTab(3)">🧪 Laboratório Técnico</button>
+  <button class="tab-btn" onclick="toggleSettings()" title="Configurações">⚙️</button>
+</div>
+
+<!-- Modal de Configuração de API (para GitHub Pages) -->
+<div id="settings-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+  <div class="chart-card" style="width:400px; padding:20px; background:white;">
+    <h3 style="margin-top:0">⚙️ Configurações da IA</h3>
+    <p style="font-size:0.8rem; color:var(--cinza); margin-bottom:15px;">Para funcionamento no GitHub Pages, insira sua chave do Google Gemini abaixo. A chave ficará salva apenas no seu navegador.</p>
+    <input type="password" id="api-key-input" placeholder="Insira sua GOOGLE_API_KEY" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-bottom:15px;">
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button onclick="toggleSettings()" style="padding:8px 15px; border:none; border-radius:5px; cursor:pointer;">Cancelar</button>
+      <button onclick="saveApiKey()" style="background:var(--azul); color:white; padding:8px 15px; border:none; border-radius:5px; cursor:pointer;">Salvar Chave</button>
+    </div>
+  </div>
 </div>
 
 <div id="tab0" class="tab-panel active">
@@ -882,22 +903,76 @@ async function generateAIInsights() {
   resultCard.style.display = 'none';
 
   try {
-    const response = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(R)
-    });
+    // Tenta primeiro o backend local
+    let response;
+    try {
+      response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(R)
+      });
+    } catch (e) {
+      // Backend offline, tentamos via SDK direto (GitHub Pages mode)
+      console.log("Backend offline, tentando integração direta via SDK.");
+    }
 
-    if (!response.ok) throw new Error('Falha na comunicação com o servidor backend.');
+    if (response && response.ok) {
+      const data = await response.json();
+      responseText.innerText = data.analysis;
+    } else {
+      // Fallback para SDK direto
+      const apiKey = localStorage.getItem('GEMINI_API_KEY');
+      if (!apiKey) {
+        throw new Error('Chave API não configurada. Clique na engrenagem ⚙️ para inserir sua chave para uso no GitHub Pages.');
+      }
 
-    const data = await response.json();
-    responseText.innerText = data.analysis;
+      const { GoogleGenerativeAI } = await import("@google/generative-ai");
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+      const prompt = `
+        Como um Especialista em Ciência de Dados Aplicada ao Direito e Gestão Judiciária, 
+        analise os dados de produtividade abaixo para uma Vara Cível e de Fazenda Pública.
+        
+        OBJETIVO: Fornecer uma SÍNTESE GERENCIAL ESTRUTURADA. 
+        REGRAS CRÍTICAS: 
+        1. NÃO recomende ações ou providências (o magistrado decidirá as ações).
+        2. Foque em identificar padrões, tendências, anomalias e gargalos técnicos.
+        3. Use linguagem técnica de gestão (indicadores, fluxos, Teoria das Filas).
+        4. Destaque pontos de atenção onde os dados mostram desvios de estabilidade.
+        
+        DADOS:
+        ${JSON.stringify(R)}
+      `;
+
+      const result = await model.generateContent(prompt);
+      responseText.innerText = result.response.text();
+    }
     resultCard.style.display = 'block';
   } catch (err) {
     alert('Erro: ' + err.message);
     btn.style.display = 'inline-block';
   } finally {
     loading.style.display = 'none';
+  }
+}
+
+function toggleSettings() {
+  const modal = document.getElementById('settings-modal');
+  modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
+  if (modal.style.display === 'flex') {
+    document.getElementById('api-key-input').value = localStorage.getItem('GEMINI_API_KEY') || '';
+  }
+}
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (key) {
+    localStorage.setItem('GEMINI_API_KEY', key);
+    alert('Chave API salva com sucesso no navegador!');
+    toggleSettings();
+  } else {
+    alert('Por favor, insira uma chave válida.');
   }
 }
 
