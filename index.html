@@ -590,7 +590,6 @@ tr:hover td{background:#f8fafc}
     </div>
 
   </div>
-</div>
 
   <!-- ══ POWER ANALYSIS ══════════════════════════════════════════════════════ -->
   <hr style="border:none;border-top:2px dashed #e2e8f0;margin:20px 0">
@@ -688,65 +687,6 @@ tr:hover td{background:#f8fafc}
   </p>
 
 
-<!-- Seção 4 unificada no Laboratório Técnico -->
-  <div class="legend-box legend-sci">
-    <h4>📐 Análise de Correlação e CCF — Fundamento Científico</h4>
-    <p>A <b>Função de Correlação Cruzada (CCF)</b> com defasagens (lags) 0–6 meses quantifica a dependência linear entre Distribuídos e Julgados em diferentes horizontes temporais. O coeficiente r de Pearson (lag=0) testa correlação contemporânea (H₀: ρ=0, teste t bicaudal). A <b>Matriz de Correlação</b> apresenta relações entre todos os pares de variáveis. Destaque: r(Dist,Julg)=0,384 é o único par com p&lt;0,05, indicando correlação positiva fraca mas estatisticamente significativa — meses com mais distribuições tendem a ter mais julgamentos no mesmo período.</p>
-  </div>
-  <div class="legend-box legend-plain">
-    <h4>💬 Em linguagem simples</h4>
-    <p>A Correlação Cruzada responde: "quando entram mais processos, produzimos mais julgamentos no mesmo mês, ou só depois?" A resposta é: <b>principalmente no mesmo mês (lag=0)</b>, com correlação de r=0,38 (p=0,02). Isso é bom — sugere capacidade de resposta rápida. Não há correlação significativa com lags maiores, indicando que a "fila" não acumula pressão por meses.</p>
-  </div>
-
-  <div class="chart-grid">
-    <div class="chart-card">
-      <h3>CCF: Dist → Julg (lag Dist causa Julg)</h3>
-      <div class="chart-wrap"><canvas id="c4a"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3>CCF: Julg → Dist (lag Julg causa Dist)</h3>
-      <div class="chart-wrap"><canvas id="c4b"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3>Dispersão: Distribuídos × Julgados (n=36 meses)</h3>
-      <div class="chart-wrap"><canvas id="c4c"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3>Matriz de Correlação (r de Pearson)</h3>
-      <div class="chart-wrap"><canvas id="c4d"></canvas></div>
-    </div>
-  </div>
-
-  <div class="tbl-wrap">
-    <table>
-      <thead><tr><th>Par</th><th>r de Pearson</th><th>p-valor</th><th>Significativo?</th><th>Interpretação</th></tr></thead>
-      <tbody>
-        <tr>
-          <td>Distribuídos × Julgados</td>
-          <td><b>0,384</b></td>
-          <td><b>0,0206</b></td>
-          <td><span class="badge-sig">Sim (p &lt; 0,05)</span></td>
-          <td>Correlação positiva fraca-moderada ✓</td>
-        </tr>
-        <tr>
-          <td>Distribuídos × Baixados</td>
-          <td>0,315</td>
-          <td>0,0615</td>
-          <td><span class="badge-nsig">Não (p > 0,05)</span></td>
-          <td>Tendência positiva não-significativa</td>
-        </tr>
-        <tr>
-          <td>Julgados × Baixados</td>
-          <td><b>0,572</b></td>
-          <td><b>0,0003</b></td>
-          <td><span class="badge-sig">Sim (p &lt; 0,001)</span></td>
-          <td>Correlação positiva moderada-forte ✓✓</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  
   <h2 style="color:var(--azul); border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:20px; margin-top:30px; font-size:1.3rem;">4. Correlações entre Fluxos</h2>
 
   <div class="legend-box legend-sci">
