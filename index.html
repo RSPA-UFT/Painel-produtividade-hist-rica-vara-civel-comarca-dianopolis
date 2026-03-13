@@ -93,11 +93,12 @@ tr:hover td{background:#f8fafc}
 
   <button class="tab-btn active" onclick="showTab(0)">📊 Visão Geral</button>
   <button class="tab-btn" onclick="showTab(1)">⏳ Fluxo e Gargalos</button>
-  <button class="tab-btn" style="background:linear-gradient(135deg, #7c3aed, #2563a8); color:white;" onclick="showTab(2)">🤖 IA Estratégica</button>
+  <button class="tab-btn" style="background:linear-gradient(135deg, #E8A811, #B3820D); /* Dourado TJTO Highlight */ color:white;" onclick="showTab(2)">🤖 IA Estratégica</button>
   <button class="tab-btn" onclick="showTab(3)">🧪 Laboratório Técnico</button>
 </div>
 
 <div id="tab0" class="tab-panel active">
+
   <div class="legend-box legend-sci">
     <h4>📐 Contexto Científico</h4>
     <p>Painel de indicadores-chave de desempenho (KPIs) construído a partir de dados mensais do sistema TJTO (Comarca, 2023–2025) e anuais da Vara Única. Os totais anuais foram verificados por triangulação: soma mensal × arquivo anual (Dist 2025: 881 ✓ | 2024: 910 ✓). Métricas de audiência e acervo provêm exclusivamente do arquivo anual da Vara.</p>
@@ -161,6 +162,7 @@ tr:hover td{background:#f8fafc}
     <div class="kpi verde">
       <div class="val">✓</div><div class="lbl">Meta 1 — J/D ≥ 1,00</div>
       <div class="delta">2025: 1,126 | 2024: 1,163 | 2023: 1,083</div>
+      <div style="font-size:0.75rem; color:var(--cinza); margin-top:5px; font-weight:normal; line-height:1.2;">*Nota: A Meta 1 (J/D) avalia o total julgado frente ao distribuído no ano civil. Difere da <i>taxa de resolução</i> de uma mesma safra processual (que acompanha o julgamento apenas dos casos que entraram naquele ano).</div>
     </div>
     <div class="kpi">
       <div class="val">3.245</div><div class="lbl">Meta 2 — Acervo (2025)</div>
@@ -216,9 +218,176 @@ tr:hover td{background:#f8fafc}
     Fontes: Comarca — 12/03/2026 (monthly exports); Sem título — Tabela 12/03/2026 (annual Vara). 
     Elaboração: Painel automatizado com Python + Chart.js | Rodrigo Perez Araújo, Juiz Diretor do Foro
   </p>
+
 </div>
 
 <div id="tab1" class="tab-panel">
+  <h2 style="color:var(--azul); border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:20px; font-size:1.3rem;">⏳ Teoria das Filas e Tempo de Espera</h2>
+
+  <div class="legend-box legend-sci">
+    <h4>📐 Teoria das Filas / Lei de Little — Fundamento Científico</h4>
+    <p>A <b>Lei de Little</b> (1961): L = λ·W, onde L = comprimento médio da fila (acervo), λ = taxa de chegada (distribuições/mês), W = tempo médio de permanência no sistema. A <b>Intensidade de Tráfego</b> ρ = λ/μ (λ=dist, μ=julg) mede utilização do "servidor". Para ρ &lt; 1 o sistema é estável; ρ → 1 indica saturação. A <b>Taxa de Congestionamento</b> TC = 1 − (Julg_ano / Dist_ano) avalia se o estoque cresce ou diminui. Nota metodológica: W calculado pela Lei de Little (≈44 meses) difere do tempo médio reportado pelo TJTO (≈84 meses/2.569 dias), pois o sistema inclui processos suspensos e sobrestados.</p>
+  </div>
+  <div class="legend-box legend-plain">
+    <h4>💬 Em linguagem simples</h4>
+    <p>Imagine o fórum como uma fila de banco: processos chegam (distribuições) e são atendidos (julgamentos). A Lei de Little nos diz quanto tempo um processo fica "na fila". Em 2025, a espera estimada é de ~44 meses. A intensidade de tráfego (88,8%) indica que estamos ocupados, mas o sistema é estável — julgamos mais do que entra (superávit de 12,6%), o que significa que o acervo tende a diminuir com o tempo.</p>
+  </div>
+
+  <!-- KPIs Filas -->
+  <h3 style="color:var(--azul);margin-bottom:10px;font-size:.9rem">⏳ Indicadores de Teoria das Filas por Ano</h3>
+
+  <h4 style="font-size:.82rem;color:var(--cinza);margin:10px 0 6px">— 2023 —</h4>
+  <div class="kpi-row">
+    <div class="kpi"><div class="val">41.8</div><div class="lbl">W — Espera (meses)</div><div class="delta">3.5 anos / 1,274 dias (Law of Little)</div></div>
+    <div class="kpi" style="border-color:var(--vermelho)"><div class="val" style="color:var(--vermelho)">92.3%</div><div class="lbl">ρ — Intensidade Tráfego</div><div class="delta">⚠️ Alta — Saturação iminente</div></div>
+    <div class="kpi"><div class="val">8.3%</div><div class="lbl">Superávit Julgamentos</div><div class="delta">Julg/Dist = 1.084 (meta ≥ 1,00)</div></div>
+    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">70.8%</div><div class="lbl">TC — Taxa Congestionamento</div><div class="delta">Acervo: 3,546 proc.</div></div>
+  </div>
+
+  <h4 style="font-size:.82rem;color:var(--cinza);margin:10px 0 6px">— 2024 —</h4>
+  <div class="kpi-row">
+    <div class="kpi"><div class="val">43.2</div><div class="lbl">W — Espera (meses)</div><div class="delta">3.6 anos / 1,316 dias (Law of Little)</div></div>
+    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">86.0%</div><div class="lbl">ρ — Intensidade Tráfego</div><div class="delta">Moderada — Sistema estável</div></div>
+    <div class="kpi"><div class="val">16.3%</div><div class="lbl">Superávit Julgamentos</div><div class="delta">Julg/Dist = 1.163 (meta ≥ 1,00)</div></div>
+    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">70.6%</div><div class="lbl">TC — Taxa Congestionamento</div><div class="delta">Acervo: 3,273 proc.</div></div>
+  </div>
+
+  <h4 style="font-size:.82rem;color:var(--cinza);margin:10px 0 6px">— 2025 —</h4>
+  <div class="kpi-row">
+    <div class="kpi"><div class="val">44.2</div><div class="lbl">W — Espera (meses)</div><div class="delta">3.7 anos / 1,348 dias (Law of Little)</div></div>
+    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">88.8%</div><div class="lbl">ρ — Intensidade Tráfego</div><div class="delta">Moderada — Sistema estável</div></div>
+    <div class="kpi"><div class="val">12.6%</div><div class="lbl">Superávit Julgamentos</div><div class="delta">Julg/Dist = 1.126 (meta ≥ 1,00)</div></div>
+    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">74.1%</div><div class="lbl">TC — Taxa Congestionamento</div><div class="delta">Acervo: 3,245 proc.</div></div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Tempo de Espera W (meses) — Law of Little</h3>
+      <div class="chart-wrap"><canvas id="c5a"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Intensidade de Tráfego ρ (%) por Ano</h3>
+      <div class="chart-wrap"><canvas id="c5b"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Acervo (L) vs Arrivals vs Service Rate</h3>
+      <div class="chart-wrap"><canvas id="c5c"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Taxa de Congestionamento TC (%) vs Superávit</h3>
+      <div class="chart-wrap"><canvas id="c5d"></canvas></div>
+    </div>
+  </div>
+
+  <br>
+  <h2 style="color:var(--azul); border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:20px; margin-top:30px; font-size:1.3rem;">📈 Monitoramento e Variação (Gráficos de Controle)</h2>
+
+  <div class="legend-box legend-sci">
+    <h4>📐 Gráficos de Controle de Shewhart — Fundamento Científico</h4>
+    <p>Os <b>Gráficos de Controle de Shewhart (XmR)</b> são ferramentas do Statistical Process Control (SPC) para distinguir variação de <i>causa comum</i> (inerente ao processo, aleatória) de variação de <i>causa especial</i> (assignable causes — anomalias reais). Limites: UCL/LCL = μ ± 3σ (99,73% da distribuição normal); UCL2/LCL2 = μ ± 2σ (Zona B/C). Regras de Nelson: pontos além de 3σ = out-of-control (OOC); pontos além de 2σ = warning; 8+ pontos consecutivos do mesmo lado = run (tendência). Ausência de violações indica processo em controle estatístico.</p>
+  </div>
+  <div class="legend-box legend-plain">
+    <h4>💬 Em linguagem simples</h4>
+    <p>Este gráfico é como um "termômetro de normalidade" para nossa produtividade. Desenhamos limites de controle (faixas vermelhas e amarelas) baseados na variação histórica. Se um mês ultrapassa esses limites, é sinal de algo anormal acontecendo (bom ou ruim). <b>Ótima notícia: nenhum mês ultrapassou os limites de 3σ em nenhuma variável</b> — o processo está estatisticamente sob controle!</p>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Controle Shewhart — Distribuídos (36 meses)</h3>
+      <div class="chart-wrap-tall"><canvas id="c6a"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Controle Shewhart — Julgados (36 meses)</h3>
+      <div class="chart-wrap-tall"><canvas id="c6b"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Controle Shewhart — Baixados (36 meses)</h3>
+      <div class="chart-wrap-tall"><canvas id="c6c"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Resumo dos Limites de Controle</h3>
+      <div class="chart-wrap-tall" style="height:220px;overflow:auto;padding:8px">
+
+        <table style="margin-bottom:10px;box-shadow:none">
+          <thead><tr><th colspan="2">Distribuídos</th></tr></thead>
+          <tbody>
+            <tr><td>μ (média)</td><td>80.33</td></tr>
+            <tr><td>σ (desvio)</td><td>22.89</td></tr>
+            <tr><td>UCL (μ+3σ)</td><td>149.02</td></tr>
+            <tr><td>LCL (μ−3σ)</td><td>11.65</td></tr>
+            <tr><td>UCL2 (μ+2σ)</td><td>126.12</td></tr>
+            <tr><td>LCL2 (μ−2σ)</td><td>34.54</td></tr>
+            <tr><td>OOC</td><td><span style='color:var(--verde)'>Nenhum OOC ✓</span></td></tr>
+            <tr><td>Aviso</td><td><span class='warn-pt'>Aviso nos pontos: [7]</span></td></tr>
+            <tr><td>Run</td><td><span style='color:var(--verde)'>Nenhum run</span></td></tr>
+          </tbody>
+        </table>
+
+        <table style="margin-bottom:10px;box-shadow:none">
+          <thead><tr><th colspan="2">Julgados</th></tr></thead>
+          <tbody>
+            <tr><td>μ (média)</td><td>90.04</td></tr>
+            <tr><td>σ (desvio)</td><td>27.40</td></tr>
+            <tr><td>UCL (μ+3σ)</td><td>172.23</td></tr>
+            <tr><td>LCL (μ−3σ)</td><td>7.85</td></tr>
+            <tr><td>UCL2 (μ+2σ)</td><td>144.83</td></tr>
+            <tr><td>LCL2 (μ−2σ)</td><td>35.25</td></tr>
+            <tr><td>OOC</td><td><span style='color:var(--verde)'>Nenhum OOC ✓</span></td></tr>
+            <tr><td>Aviso</td><td><span class='warn-pt'>Aviso nos pontos: [7]</span></td></tr>
+            <tr><td>Run</td><td><span style='color:var(--verde)'>Nenhum run</span></td></tr>
+          </tbody>
+        </table>
+
+        <table style="margin-bottom:10px;box-shadow:none">
+          <thead><tr><th colspan="2">Baixados</th></tr></thead>
+          <tbody>
+            <tr><td>μ (média)</td><td>117.67</td></tr>
+            <tr><td>σ (desvio)</td><td>30.47</td></tr>
+            <tr><td>UCL (μ+3σ)</td><td>209.07</td></tr>
+            <tr><td>LCL (μ−3σ)</td><td>26.27</td></tr>
+            <tr><td>UCL2 (μ+2σ)</td><td>178.60</td></tr>
+            <tr><td>LCL2 (μ−2σ)</td><td>56.73</td></tr>
+            <tr><td>OOC</td><td><span style='color:var(--verde)'>Nenhum OOC ✓</span></td></tr>
+            <tr><td>Aviso</td><td><span class='warn-pt'>Aviso nos pontos: [24]</span></td></tr>
+            <tr><td>Run</td><td><span class='warn-pt'>Run: pontos [20, 21]</span></td></tr>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="tab2" class="tab-panel">
+
+  <div class="legend-box" style="background:#f5f3ff; border-color:#003B70;">
+    <h4 style="color:#003B70">🤖 Inteligência Artificial — Análise Estratégica</h4>
+    <p>Este módulo utiliza o modelo <b>Gemini 1.5 Pro (3.1 Pro)</b> para processar os dados estatísticos do painel e fornecer insights qualitativos, identificando padrões complexos e sugerindo focos de gestão judiciária. A análise é gerada sob demanda a partir dos dados consolidados.</p>
+  </div>
+
+  <div class="chart-card" style="margin-bottom:20px; text-align:center; padding:40px;">
+    <button id="ai-btn" onclick="generateAIInsights()" style="background:linear-gradient(135deg, #E8A811, #B3820D); /* Dourado TJTO Highlight */ color:white; border:none; padding:15px 30px; border-radius:30px; font-weight:700; cursor:pointer; font-size:1rem; box-shadow:0 4px 15px rgba(232,168,17,0.4); transition:transform 0.2s;">
+      🚀 Gerar Análise Erudita por IA
+    </button>
+    <div id="ai-loading" style="display:none; margin-top:20px;">
+      <p style="color:var(--cinza); font-style:italic;">Processando dados e consultando o Gemini... Por favor, aguarde.</p>
+    </div>
+  </div>
+
+  <div id="ai-result-card" class="chart-card" style="display:none; line-height:1.6; color:#334155; font-size:0.95rem;">
+    <h3 style="border-bottom-color:#003B70">📄 Relatório de Análise Técnica</h3>
+    <div id="ai-response-text" style="white-space: pre-wrap; margin-top:15px;">
+</div>
+
+<div id="tab3" class="tab-panel">
+  <div class="legend-box" style="background:#f4f6f8; border-color:var(--amarelo);">
+    <h4 style="color:var(--azul)">🔬 Por que um "Laboratório"?</h4>
+    <p>Todos os cálculos que embasam as conclusões gerenciais estão expostos aqui por transparência metodológica. Eles servem não para o dia a dia, mas para assegurar a rigidez científica das decisões da Justiça, eliminando o "achismo" gerencial.</p>
+  </div>
+
+  <h2 style="color:var(--azul); border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:20px; font-size:1.3rem; margin-top:20px;">1. Estatística Descritiva</h2>
+
   <div class="legend-box legend-sci">
     <h4>📐 Estatística Descritiva — Fundamento Científico</h4>
     <p>A análise descritiva caracteriza a distribuição empírica de cada variável por ano. O Coeficiente de Variação (CV = σ/μ × 100) mensura dispersão relativa independentemente da escala. O teste de Shapiro-Wilk (n=12/ano) avalia aderência à distribuição normal (H₀: normalidade). Skewness e curtose descrevem assimetria e achatamento. Estes parâmetros fundamentam a escolha de testes inferenciais subsequentes (paramétricos vs. não-paramétricos).</p>
@@ -228,7 +397,8 @@ tr:hover td{background:#f8fafc}
     <p>Aqui vemos quanto variaram os números mês a mês em cada ano. O CV alto em 2023 (Distribuídos: 34,4%) indica grande variação mensal — alguns meses com muito trabalho, outros com pouco. Em 2025 a variação diminuiu (CV: 20,2%), sugerindo um ritmo mais estável. Todos os dados passaram no teste de normalidade, o que facilita comparações estatísticas.</p>
   </div>
 
-  <div class="tbl-wrap">
+  <p style="font-size:0.8rem; color:var(--cinza); margin:-5px 0 15px 0;">*Nota explicativa: A estatística descritiva (ex: normalidade Shapiro-Wilk) avalia matematicamente se a distribuição mensal obedece a um padrão previsível (curva de sino). O CV% mede a irregularidade do fluxo. Essencial para validar os testes de hipótese subsequentes.</p>
+<div class="tbl-wrap">
     <table>
       <thead><tr><th>Variável/Ano</th><th>Média</th><th>Mediana</th><th>DP</th><th>CV%</th><th>Mín</th><th>Máx</th><th>Q1</th><th>Q3</th><th>Assimetria</th><th>Curtose</th><th>Shapiro-W p</th><th>Normal?</th></tr></thead>
       <tbody>
@@ -264,9 +434,10 @@ tr:hover td{background:#f8fafc}
       <div class="chart-wrap"><canvas id="c1d"></canvas></div>
     </div>
   </div>
-</div>
 
-<div id="tab2" class="tab-panel">
+  
+  <h2 style="color:var(--azul); border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:20px; margin-top:30px; font-size:1.3rem;">2. Sazonalidade Histórica</h2>
+
   <div class="legend-box legend-sci">
     <h4>📐 Análise de Sazonalidade — Fundamento Científico</h4>
     <p>O Índice Sazonal (IS) é calculado como a média do mês / média geral da série, para cada variável. IS &gt; 1 indica mês acima da média histórica; IS &lt; 1 indica mês abaixo. O heatmap de J/D (Julgados/Distribuídos) por mês-ano identifica padrões de eficiência intra-anual. A análise de sazonalidade é relevante para planejamento de férias coletivas, alocação de audiências e metas mensais progressivas.</p>
@@ -276,7 +447,8 @@ tr:hover td{background:#f8fafc}
     <p>Alguns meses são naturalmente mais movimentados que outros. Agosto, Outubro e Novembro tendem a ter mais distribuições (IS acima de 1,2), enquanto Janeiro e Fevereiro são mais calmos. Saber isso nos ajuda a planejar melhor — como designar mais audiências nos meses de alta e usar janeiro para processos administrativos e planejamento.</p>
   </div>
 
-  <div class="chart-grid">
+  <p style="font-size:0.8rem; color:var(--cinza); margin:-5px 0 15px 0;">*Nota explicativa: O Índice Sazonal comprova os meses de maior pressão histórica. Isola o peso relativo de cada mês, base fundamental para validar o planejamento do calendário de audiências e férias da equipe.</p>
+<div class="chart-grid">
     <div class="chart-card">
       <h3>Índice Sazonal — Distribuídos (média 3 anos)</h3>
       <div class="chart-wrap"><canvas id="c2a"></canvas></div>
@@ -317,9 +489,10 @@ tr:hover td{background:#f8fafc}
       </tbody>
     </table>
   </div>
-</div>
 
-<div id="tab3" class="tab-panel">
+  
+  <h2 style="color:var(--azul); border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:20px; margin-top:30px; font-size:1.3rem;">3. Testes de Hipótese (Diferenças Estruturais)</h2>
+
   <div class="legend-box legend-sci">
     <h4>📐 Testes de Hipótese — Fundamento Científico</h4>
     <p><b>Mann-Kendall</b>: teste não-paramétrico para tendência monotônica em séries temporais (H₀: ausência de tendência). Robusto a não-normalidade e valores extremos. <b>Kruskal-Wallis</b>: análogo não-paramétrico da ANOVA, compara medianas de k≥3 grupos independentes (H₀: distribuições iguais). <b>Mann-Whitney U</b>: post-hoc para comparação pareada (H₀: distribuições iguais entre dois grupos). <b>Shapiro-Wilk</b>: testa normalidade da série combinada (H₀: distribuição normal). Nível de significância: α = 0,05.</p>
@@ -329,7 +502,8 @@ tr:hover td{background:#f8fafc}
     <p>Fizemos 4 tipos de testes científicos para verificar se as mudanças que observamos (queda nos números) são estatisticamente reais ou apenas variação aleatória. O resultado foi consistente: <b>nenhum teste encontrou diferença significativa</b> entre os anos. Isso significa que a variação observada está dentro do esperado pelo acaso — não há evidência de piora ou melhora estrutural. Uma conclusão importante: a variação é normal, não há crise.</p>
   </div>
 
-  <h3 style="color:var(--azul);margin:0 0 10px;font-size:.9rem">🔵 Teste Mann-Kendall — Tendência na Série Temporal (36 meses, 2023–2025)</h3>
+  <p style="font-size:0.8rem; color:var(--cinza); margin:-5px 0 15px 0;">*Nota explicativa: Testes de hipótese (Mann-Kendall, Kruskal-Wallis) calculam se a diferença entre os anos é real ou mero acaso do sistema (p-valor). Os resultados de <i>não-significância</i> indicam estabilidade estrutural — ou seja, matematicamente não há evidência de piora na unidade.</p>
+<h3 style="color:var(--azul);margin:0 0 10px;font-size:.9rem">🔵 Teste Mann-Kendall — Tendência na Série Temporal (36 meses, 2023–2025)</h3>
   <div class="test-grid">
 
     <div class="test-card warn">
@@ -592,143 +766,71 @@ tr:hover td{background:#f8fafc}
       </tbody>
     </table>
   </div>
-</div>
 
-<div id="tab5" class="tab-panel">
+  
+  <h2 style="color:var(--azul); border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:20px; margin-top:30px; font-size:1.3rem;">4. Correlações entre Fluxos</h2>
+
   <div class="legend-box legend-sci">
-    <h4>📐 Teoria das Filas / Lei de Little — Fundamento Científico</h4>
-    <p>A <b>Lei de Little</b> (1961): L = λ·W, onde L = comprimento médio da fila (acervo), λ = taxa de chegada (distribuições/mês), W = tempo médio de permanência no sistema. A <b>Intensidade de Tráfego</b> ρ = λ/μ (λ=dist, μ=julg) mede utilização do "servidor". Para ρ &lt; 1 o sistema é estável; ρ → 1 indica saturação. A <b>Taxa de Congestionamento</b> TC = 1 − (Julg_ano / Dist_ano) avalia se o estoque cresce ou diminui. Nota metodológica: W calculado pela Lei de Little (≈44 meses) difere do tempo médio reportado pelo TJTO (≈84 meses/2.569 dias), pois o sistema inclui processos suspensos e sobrestados.</p>
+    <h4>📐 Análise de Correlação e CCF — Fundamento Científico</h4>
+    <p>A <b>Função de Correlação Cruzada (CCF)</b> com defasagens (lags) 0–6 meses quantifica a dependência linear entre Distribuídos e Julgados em diferentes horizontes temporais. O coeficiente r de Pearson (lag=0) testa correlação contemporânea (H₀: ρ=0, teste t bicaudal). A <b>Matriz de Correlação</b> apresenta relações entre todos os pares de variáveis. Destaque: r(Dist,Julg)=0,384 é o único par com p&lt;0,05, indicando correlação positiva fraca mas estatisticamente significativa — meses com mais distribuições tendem a ter mais julgamentos no mesmo período.</p>
   </div>
   <div class="legend-box legend-plain">
     <h4>💬 Em linguagem simples</h4>
-    <p>Imagine o fórum como uma fila de banco: processos chegam (distribuições) e são atendidos (julgamentos). A Lei de Little nos diz quanto tempo um processo fica "na fila". Em 2025, a espera estimada é de ~44 meses. A intensidade de tráfego (88,8%) indica que estamos ocupados, mas o sistema é estável — julgamos mais do que entra (superávit de 12,6%), o que significa que o acervo tende a diminuir com o tempo.</p>
+    <p>A Correlação Cruzada responde: "quando entram mais processos, produzimos mais julgamentos no mesmo mês, ou só depois?" A resposta é: <b>principalmente no mesmo mês (lag=0)</b>, com correlação de r=0,38 (p=0,02). Isso é bom — sugere capacidade de resposta rápida. Não há correlação significativa com lags maiores, indicando que a "fila" não acumula pressão por meses.</p>
   </div>
 
-  <!-- KPIs Filas -->
-  <h3 style="color:var(--azul);margin-bottom:10px;font-size:.9rem">⏳ Indicadores de Teoria das Filas por Ano</h3>
-
-  <h4 style="font-size:.82rem;color:var(--cinza);margin:10px 0 6px">— 2023 —</h4>
-  <div class="kpi-row">
-    <div class="kpi"><div class="val">41.8</div><div class="lbl">W — Espera (meses)</div><div class="delta">3.5 anos / 1,274 dias (Law of Little)</div></div>
-    <div class="kpi" style="border-color:var(--vermelho)"><div class="val" style="color:var(--vermelho)">92.3%</div><div class="lbl">ρ — Intensidade Tráfego</div><div class="delta">⚠️ Alta — Saturação iminente</div></div>
-    <div class="kpi"><div class="val">8.3%</div><div class="lbl">Superávit Julgamentos</div><div class="delta">Julg/Dist = 1.084 (meta ≥ 1,00)</div></div>
-    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">70.8%</div><div class="lbl">TC — Taxa Congestionamento</div><div class="delta">Acervo: 3,546 proc.</div></div>
-  </div>
-
-  <h4 style="font-size:.82rem;color:var(--cinza);margin:10px 0 6px">— 2024 —</h4>
-  <div class="kpi-row">
-    <div class="kpi"><div class="val">43.2</div><div class="lbl">W — Espera (meses)</div><div class="delta">3.6 anos / 1,316 dias (Law of Little)</div></div>
-    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">86.0%</div><div class="lbl">ρ — Intensidade Tráfego</div><div class="delta">Moderada — Sistema estável</div></div>
-    <div class="kpi"><div class="val">16.3%</div><div class="lbl">Superávit Julgamentos</div><div class="delta">Julg/Dist = 1.163 (meta ≥ 1,00)</div></div>
-    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">70.6%</div><div class="lbl">TC — Taxa Congestionamento</div><div class="delta">Acervo: 3,273 proc.</div></div>
-  </div>
-
-  <h4 style="font-size:.82rem;color:var(--cinza);margin:10px 0 6px">— 2025 —</h4>
-  <div class="kpi-row">
-    <div class="kpi"><div class="val">44.2</div><div class="lbl">W — Espera (meses)</div><div class="delta">3.7 anos / 1,348 dias (Law of Little)</div></div>
-    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">88.8%</div><div class="lbl">ρ — Intensidade Tráfego</div><div class="delta">Moderada — Sistema estável</div></div>
-    <div class="kpi"><div class="val">12.6%</div><div class="lbl">Superávit Julgamentos</div><div class="delta">Julg/Dist = 1.126 (meta ≥ 1,00)</div></div>
-    <div class="kpi" style="border-color:var(--amarelo)"><div class="val" style="color:var(--amarelo)">74.1%</div><div class="lbl">TC — Taxa Congestionamento</div><div class="delta">Acervo: 3,245 proc.</div></div>
-  </div>
-
-  <div class="chart-grid">
+  <p style="font-size:0.8rem; color:var(--cinza); margin:-5px 0 15px 0;">*Nota explicativa: A Correlação (r de Pearson) mede o alinhamento de esforço (julgamentos) com a demanda (distribuição). A correlação positiva aqui comprova a rápida resposta da vara: meses com alta entrada gerenciam alta saída no mesmo período (lag 0).</p>
+<div class="chart-grid">
     <div class="chart-card">
-      <h3>Tempo de Espera W (meses) — Law of Little</h3>
-      <div class="chart-wrap"><canvas id="c5a"></canvas></div>
+      <h3>CCF: Dist → Julg (lag Dist causa Julg)</h3>
+      <div class="chart-wrap"><canvas id="c4a"></canvas></div>
     </div>
     <div class="chart-card">
-      <h3>Intensidade de Tráfego ρ (%) por Ano</h3>
-      <div class="chart-wrap"><canvas id="c5b"></canvas></div>
+      <h3>CCF: Julg → Dist (lag Julg causa Dist)</h3>
+      <div class="chart-wrap"><canvas id="c4b"></canvas></div>
     </div>
     <div class="chart-card">
-      <h3>Acervo (L) vs Arrivals vs Service Rate</h3>
-      <div class="chart-wrap"><canvas id="c5c"></canvas></div>
+      <h3>Dispersão: Distribuídos × Julgados (n=36 meses)</h3>
+      <div class="chart-wrap"><canvas id="c4c"></canvas></div>
     </div>
     <div class="chart-card">
-      <h3>Taxa de Congestionamento TC (%) vs Superávit</h3>
-      <div class="chart-wrap"><canvas id="c5d"></canvas></div>
+      <h3>Matriz de Correlação (r de Pearson)</h3>
+      <div class="chart-wrap"><canvas id="c4d"></canvas></div>
     </div>
   </div>
-</div>
 
-<div id="tab6" class="tab-panel">
-  <div class="legend-box legend-sci">
-    <h4>📐 Gráficos de Controle de Shewhart — Fundamento Científico</h4>
-    <p>Os <b>Gráficos de Controle de Shewhart (XmR)</b> são ferramentas do Statistical Process Control (SPC) para distinguir variação de <i>causa comum</i> (inerente ao processo, aleatória) de variação de <i>causa especial</i> (assignable causes — anomalias reais). Limites: UCL/LCL = μ ± 3σ (99,73% da distribuição normal); UCL2/LCL2 = μ ± 2σ (Zona B/C). Regras de Nelson: pontos além de 3σ = out-of-control (OOC); pontos além de 2σ = warning; 8+ pontos consecutivos do mesmo lado = run (tendência). Ausência de violações indica processo em controle estatístico.</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Par</th><th>r de Pearson</th><th>p-valor</th><th>Significativo?</th><th>Interpretação</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Distribuídos × Julgados</td>
+          <td><b>0,384</b></td>
+          <td><b>0,0206</b></td>
+          <td><span class="badge-sig">Sim (p &lt; 0,05)</span></td>
+          <td>Correlação positiva fraca-moderada ✓</td>
+        </tr>
+        <tr>
+          <td>Distribuídos × Baixados</td>
+          <td>0,315</td>
+          <td>0,0615</td>
+          <td><span class="badge-nsig">Não (p > 0,05)</span></td>
+          <td>Tendência positiva não-significativa</td>
+        </tr>
+        <tr>
+          <td>Julgados × Baixados</td>
+          <td><b>0,572</b></td>
+          <td><b>0,0003</b></td>
+          <td><span class="badge-sig">Sim (p &lt; 0,001)</span></td>
+          <td>Correlação positiva moderada-forte ✓✓</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
-  <div class="legend-box legend-plain">
-    <h4>💬 Em linguagem simples</h4>
-    <p>Este gráfico é como um "termômetro de normalidade" para nossa produtividade. Desenhamos limites de controle (faixas vermelhas e amarelas) baseados na variação histórica. Se um mês ultrapassa esses limites, é sinal de algo anormal acontecendo (bom ou ruim). <b>Ótima notícia: nenhum mês ultrapassou os limites de 3σ em nenhuma variável</b> — o processo está estatisticamente sob controle!</p>
-  </div>
 
-  <div class="chart-grid">
-    <div class="chart-card">
-      <h3>Controle Shewhart — Distribuídos (36 meses)</h3>
-      <div class="chart-wrap-tall"><canvas id="c6a"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3>Controle Shewhart — Julgados (36 meses)</h3>
-      <div class="chart-wrap-tall"><canvas id="c6b"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3>Controle Shewhart — Baixados (36 meses)</h3>
-      <div class="chart-wrap-tall"><canvas id="c6c"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <h3>Resumo dos Limites de Controle</h3>
-      <div class="chart-wrap-tall" style="height:220px;overflow:auto;padding:8px">
+  
+  <h2 style="color:var(--azul); border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:20px; margin-top:30px; font-size:1.3rem;">5. Regressões Temporais e Previsões</h2>
 
-        <table style="margin-bottom:10px;box-shadow:none">
-          <thead><tr><th colspan="2">Distribuídos</th></tr></thead>
-          <tbody>
-            <tr><td>μ (média)</td><td>80.33</td></tr>
-            <tr><td>σ (desvio)</td><td>22.89</td></tr>
-            <tr><td>UCL (μ+3σ)</td><td>149.02</td></tr>
-            <tr><td>LCL (μ−3σ)</td><td>11.65</td></tr>
-            <tr><td>UCL2 (μ+2σ)</td><td>126.12</td></tr>
-            <tr><td>LCL2 (μ−2σ)</td><td>34.54</td></tr>
-            <tr><td>OOC</td><td><span style='color:var(--verde)'>Nenhum OOC ✓</span></td></tr>
-            <tr><td>Aviso</td><td><span class='warn-pt'>Aviso nos pontos: [7]</span></td></tr>
-            <tr><td>Run</td><td><span style='color:var(--verde)'>Nenhum run</span></td></tr>
-          </tbody>
-        </table>
-
-        <table style="margin-bottom:10px;box-shadow:none">
-          <thead><tr><th colspan="2">Julgados</th></tr></thead>
-          <tbody>
-            <tr><td>μ (média)</td><td>90.04</td></tr>
-            <tr><td>σ (desvio)</td><td>27.40</td></tr>
-            <tr><td>UCL (μ+3σ)</td><td>172.23</td></tr>
-            <tr><td>LCL (μ−3σ)</td><td>7.85</td></tr>
-            <tr><td>UCL2 (μ+2σ)</td><td>144.83</td></tr>
-            <tr><td>LCL2 (μ−2σ)</td><td>35.25</td></tr>
-            <tr><td>OOC</td><td><span style='color:var(--verde)'>Nenhum OOC ✓</span></td></tr>
-            <tr><td>Aviso</td><td><span class='warn-pt'>Aviso nos pontos: [7]</span></td></tr>
-            <tr><td>Run</td><td><span style='color:var(--verde)'>Nenhum run</span></td></tr>
-          </tbody>
-        </table>
-
-        <table style="margin-bottom:10px;box-shadow:none">
-          <thead><tr><th colspan="2">Baixados</th></tr></thead>
-          <tbody>
-            <tr><td>μ (média)</td><td>117.67</td></tr>
-            <tr><td>σ (desvio)</td><td>30.47</td></tr>
-            <tr><td>UCL (μ+3σ)</td><td>209.07</td></tr>
-            <tr><td>LCL (μ−3σ)</td><td>26.27</td></tr>
-            <tr><td>UCL2 (μ+2σ)</td><td>178.60</td></tr>
-            <tr><td>LCL2 (μ−2σ)</td><td>56.73</td></tr>
-            <tr><td>OOC</td><td><span style='color:var(--verde)'>Nenhum OOC ✓</span></td></tr>
-            <tr><td>Aviso</td><td><span class='warn-pt'>Aviso nos pontos: [24]</span></td></tr>
-            <tr><td>Run</td><td><span class='warn-pt'>Run: pontos [20, 21]</span></td></tr>
-          </tbody>
-        </table>
-
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="tab7" class="tab-panel">
   <div class="legend-box legend-sci">
     <h4>📐 Regressão Linear e Previsão — Fundamento Científico</h4>
     <p>A <b>Regressão Linear Simples</b> (OLS — Ordinary Least Squares) ajusta ŷ = β₀ + β₁·t, onde t = mês sequencial (1–36). R² mede proporção da variância explicada pela tendência temporal. O <b>Intervalo de Predição 95%</b> (IP 95%) é mais amplo que o IC da média, pois considera variabilidade individual. A <b>Regressão Múltipla</b> inclui tempo + Distribuídos como preditores de Julgados (R²=0,159). Nenhuma regressão univariada temporal é estatisticamente significativa (todos p&gt;0,05), reforçando o achado de ausência de tendência estrutural.</p>
@@ -738,7 +840,8 @@ tr:hover td{background:#f8fafc}
     <p>Usamos regressão para fazer projeções para 2026 e verificar se há tendência de queda ao longo do tempo. Os resultados confirmam: <b>não há tendência estatisticamente significativa</b> — as pequenas quedas observadas podem ser acaso. A previsão para 2026 é de ~883 distribuições e ~957 julgamentos por ano (média), mas com ampla margem de incerteza dada a variabilidade natural do processo.</p>
   </div>
 
-  <h4 style="font-size:.85rem;color:var(--azul);margin:10px 0 6px">📈 Distribuídos</h4>
+  <p style="font-size:0.8rem; color:var(--cinza); margin:5px 0 15px 0;">*Nota explicativa: A Regressão projeta o horizonte temporal isolando sazonalidades. O R² baixo e o p-valor não-significativo reforçam que o tempo, por si só, não explica a variação da produtividade, garantindo que não estamos numa rampa de declínio estutural.</p>
+<h4 style="font-size:.85rem;color:var(--azul);margin:10px 0 6px">📈 Distribuídos</h4>
   <div class="kpi-row">
     <div class="kpi"><div class="val">-0.1865</div><div class="lbl">Slope β₁ (por mês)</div><div class="delta">Distribuídos ↘ /mês</div></div>
     <div class="kpi"><div class="val">0.0091</div><div class="lbl">R² (variância explicada)</div><div class="delta">0.9% do total</div></div>
@@ -803,26 +906,8 @@ tr:hover td{background:#f8fafc}
       </tbody>
     </table>
   </div>
+
 </div>
-
-<div id="tab8" class="tab-panel">
-  <div class="legend-box" style="background:#f5f3ff; border-color:#7c3aed;">
-    <h4 style="color:#7c3aed">🤖 Inteligência Artificial — Análise Estratégica</h4>
-    <p>Este módulo utiliza o modelo <b>Gemini 1.5 Pro (3.1 Pro)</b> para processar os dados estatísticos do painel e fornecer insights qualitativos, identificando padrões complexos e sugerindo focos de gestão judiciária. A análise é gerada sob demanda a partir dos dados consolidados.</p>
-  </div>
-
-  <div class="chart-card" style="margin-bottom:20px; text-align:center; padding:40px;">
-    <button id="ai-btn" onclick="generateAIInsights()" style="background:linear-gradient(135deg, #7c3aed, #2563a8); color:white; border:none; padding:15px 30px; border-radius:30px; font-weight:700; cursor:pointer; font-size:1rem; box-shadow:0 4px 15px rgba(124,58,237,0.3); transition:transform 0.2s;">
-      🚀 Gerar Análise Erudita por IA
-    </button>
-    <div id="ai-loading" style="display:none; margin-top:20px;">
-      <p style="color:var(--cinza); font-style:italic;">Processando dados e consultando o Gemini... Por favor, aguarde.</p>
-    </div>
-  </div>
-
-  <div id="ai-result-card" class="chart-card" style="display:none; line-height:1.6; color:#334155; font-size:0.95rem;">
-    <h3 style="border-bottom-color:#7c3aed">📄 Relatório de Análise Técnica</h3>
-    <div id="ai-response-text" style="white-space: pre-wrap; margin-top:15px;"></div>
 <script>
 const R = {"descritiva": {"2023": {"dist": {"mean": 84.83, "median": 79.0, "std": 29.17, "cv": 34.4, "min": 40, "max": 141, "q1": 63.8, "q3": 103.5, "skew": 0.321, "kurt": -0.663, "shapiro_p": 0.9755, "normal": true}, "julg": {"mean": 91.92, "median": 93.0, "std": 35.3, "cv": 38.4, "min": 38, "max": 156, "q1": 75.0, "q3": 108.5, "skew": 0.099, "kurt": -0.705, "shapiro_p": 0.8977, "normal": true}, "baix": {"mean": 121.92, "median": 121.0, "std": 33.48, "cv": 27.5, "min": 58, "max": 166, "q1": 109.2, "q3": 151.0, "skew": -0.437, "kurt": -0.716, "shapiro_p": 0.5561, "normal": true}}, "2024": {"dist": {"mean": 75.83, "median": 75.0, "std": 14.17, "cv": 18.7, "min": 56, "max": 105, "q1": 66.8, "q3": 80.2, "skew": 0.645, "kurt": -0.357, "shapiro_p": 0.5657, "normal": true}, "julg": {"mean": 88.17, "median": 88.0, "std": 17.76, "cv": 20.1, "min": 43, "max": 108, "q1": 83.0, "q3": 99.2, "skew": -1.216, "kurt": 1.581, "shapiro_p": 0.0558, "normal": true}, "baix": {"mean": 113.42, "median": 112.0, "std": 27.94, "cv": 24.6, "min": 77, "max": 170, "q1": 88.0, "q3": 132.0, "skew": 0.524, "kurt": -0.572, "shapiro_p": 0.6577, "normal": true}}, "2025": {"dist": {"mean": 73.42, "median": 72.0, "std": 14.85, "cv": 20.2, "min": 49, "max": 97, "q1": 64.0, "q3": 81.8, "skew": 0.26, "kurt": -0.804, "shapiro_p": 0.7212, "normal": true}, "julg": {"mean": 82.67, "median": 84.0, "std": 17.26, "cv": 20.9, "min": 46, "max": 109, "q1": 77.2, "q3": 93.2, "skew": -0.628, "kurt": -0.043, "shapiro_p": 0.8051, "normal": true}, "baix": {"mean": 94.58, "median": 87.5, "std": 28.78, "cv": 30.4, "min": 54, "max": 137, "q1": 73.0, "q3": 120.8, "skew": 0.36, "kurt": -1.254, "shapiro_p": 0.2133, "normal": true}}}, "sazonalidade": {"saz": {"dist": [{"mes": "Jan", "mean": 56.0, "std": 13.9, "vals": [40, 63, 65], "idx": 0.718}, {"mes": "Fev", "mean": 65.3, "std": 12.9, "vals": [80, 56, 60], "idx": 0.837}, {"mes": "Mar", "mean": 71.0, "std": 7.2, "vals": [63, 77, 73], "idx": 0.91}, {"mes": "Abr", "mean": 84.7, "std": 18.0, "vals": [64, 93, 97], "idx": 1.085}, {"mes": "Mai", "mean": 69.3, "std": 5.1, "vals": [75, 68, 65], "idx": 0.889}, {"mes": "Jun", "mean": 72.3, "std": 21.1, "vals": [78, 90, 49], "idx": 0.927}, {"mes": "Jul", "mean": 84.7, "std": 11.7, "vals": [98, 76, 80], "idx": 1.085}, {"mes": "Ago", "mean": 96.7, "std": 40.4, "vals": [141, 62, 87], "idx": 1.239}, {"mes": "Set", "mean": 85.0, "std": 28.8, "vals": [117, 77, 61], "idx": 1.089}, {"mes": "Out", "mean": 89.3, "std": 17.8, "vals": [102, 69, 97], "idx": 1.145}, {"mes": "Nov", "mean": 94.7, "std": 20.6, "vals": [108, 105, 71], "idx": 1.213}, {"mes": "Dez", "mean": 67.3, "std": 13.3, "vals": [52, 74, 76], "idx": 0.863}], "julg": [{"mes": "Jan", "mean": 57.0, "std": 19.9, "vals": [45, 80, 46], "idx": 0.651}, {"mes": "Fev", "mean": 94.0, "std": 7.0, "vals": [99, 86, 97], "idx": 1.073}, {"mes": "Mar", "mean": 81.7, "std": 19.6, "vals": [100, 84, 61], "idx": 0.932}, {"mes": "Abr", "mean": 94.7, "std": 19.7, "vals": [104, 108, 72], "idx": 1.081}, {"mes": "Mai", "mean": 101.3, "std": 12.4, "vals": [87, 108, 109], "idx": 1.157}, {"mes": "Jun", "mean": 104.0, "std": 25.1, "vals": [133, 90, 89], "idx": 1.187}, {"mes": "Jul", "mean": 74.7, "std": 34.3, "vals": [38, 106, 80], "idx": 0.853}, {"mes": "Ago", "mean": 111.0, "std": 40.4, "vals": [156, 78, 99], "idx": 1.267}, {"mes": "Set", "mean": 89.0, "std": 7.5, "vals": [82, 97, 88], "idx": 1.016}, {"mes": "Out", "mean": 99.3, "std": 20.0, "vals": [122, 84, 92], "idx": 1.134}, {"mes": "Nov", "mean": 85.7, "std": 7.4, "vals": [83, 94, 80], "idx": 0.978}, {"mes": "Dez", "mean": 58.7, "std": 18.4, "vals": [54, 43, 79], "idx": 0.67}], "baix": [{"mes": "Jan", "mean": 69.7, "std": 13.6, "vals": [78, 77, 54], "idx": 0.633}, {"mes": "Fev", "mean": 96.0, "std": 22.1, "vals": [121, 88, 79], "idx": 0.873}, {"mes": "Mar", "mean": 112.7, "std": 46.2, "vals": [166, 84, 88], "idx": 1.025}, {"mes": "Abr", "mean": 112.0, "std": 35.8, "vals": [117, 145, 74], "idx": 1.018}, {"mes": "Mai", "mean": 123.7, "std": 32.5, "vals": [149, 135, 87], "idx": 1.125}, {"mes": "Jun", "mean": 136.0, "std": 21.5, "vals": [157, 114, 137], "idx": 1.237}, {"mes": "Jul", "mean": 140.0, "std": 26.3, "vals": [121, 170, 129], "idx": 1.273}, {"mes": "Ago", "mean": 119.0, "std": 47.2, "vals": [159, 131, 67], "idx": 1.082}, {"mes": "Set", "mean": 96.0, "std": 23.3, "vals": [115, 103, 70], "idx": 0.873}, {"mes": "Out", "mean": 125.7, "std": 14.0, "vals": [130, 110, 137], "idx": 1.143}, {"mes": "Nov", "mean": 108.7, "std": 14.5, "vals": [92, 116, 118], "idx": 0.988}, {"mes": "Dez", "mean": 80.3, "std": 19.7, "vals": [58, 88, 95], "idx": 0.73}]}, "jd_heat": {"2023": [1.125, 1.238, 1.587, 1.625, 1.16, 1.705, 0.388, 1.106, 0.701, 1.196, 0.769, 1.038], "2024": [1.27, 1.536, 1.091, 1.161, 1.588, 1.0, 1.395, 1.395, 1.258, 1.26, 1.217, 0.895, 0.581], "2025": [0.708, 1.617, 0.836, 0.742, 1.677, 1.816, 1.0, 1.138, 1.443, 0.948, 1.127, 1.039]}}, "testes": {"mk_dist": {"S": -28, "z": -0.3678, "p": 0.713, "trend": "decrescente", "sig": false}, "mk_julg": {"S": -69, "z": -0.9262, "p": 0.3543, "trend": "decrescente", "sig": false}, "mk_baix": {"S": -135, "z": -1.8252, "p": 0.068, "trend": "decrescente", "sig": false}, "mk_jd": {"S": -35, "z": -0.4631, "p": 0.6433, "trend": "decrescente", "sig": false}, "kw_dist": {"H": 1.4245, "p": 0.4905, "sig": false}, "kw_julg": {"H": 1.0022, "p": 0.6059, "sig": false}, "kw_baix": {"H": 4.3337, "p": 0.1145, "sig": false}, "mw_dist": {"2023_vs_2024": {"U": 87.5, "p": 0.3863, "sig": false}, "2024_vs_2025": {"U": 79.5, "p": 0.6858, "sig": false}, "2023_vs_2025": {"U": 90.5, "p": 0.2984, "sig": false}}, "mw_julg": {"2023_vs_2024": {"U": 77.0, "p": 0.7949, "sig": false}, "2024_vs_2025": {"U": 85.5, "p": 0.4522, "sig": false}, "2023_vs_2025": {"U": 87.5, "p": 0.3863, "sig": false}}, "mw_baix": {"2023_vs_2024": {"U": 88.0, "p": 0.3706, "sig": false}, "2024_vs_2025": {"U": 98.0, "p": 0.1405, "sig": false}, "2023_vs_2025": {"U": 104.0, "p": 0.0688, "sig": false}}, "sw_dist": {"p": 0.1141, "normal": true}, "sw_julg": {"p": 0.1277, "normal": true}, "sw_baix": {"p": 0.432, "normal": true}}, "correlacao": {"ccf_dist_julg": [{"lag": 0, "r": 0.3844, "p": 0.0206, "sig": true}, {"lag": 1, "r": 0.0548, "p": 0.7545, "sig": false}, {"lag": 2, "r": -0.0672, "p": 0.7058, "sig": false}, {"lag": 3, "r": -0.1124, "p": 0.5334, "sig": false}, {"lag": 4, "r": -0.2585, "p": 0.1531, "sig": false}, {"lag": 5, "r": -0.221, "p": 0.2321, "sig": false}, {"lag": 6, "r": 0.1672, "p": 0.377, "sig": false}], "ccf_julg_dist": [{"lag": 0, "r": 0.3844, "p": 0.0206, "sig": true}, {"lag": 1, "r": 0.0738, "p": 0.6736, "sig": false}, {"lag": 2, "r": 0.332, "p": 0.0551, "sig": false}, {"lag": 3, "r": 0.1322, "p": 0.4633, "sig": false}, {"lag": 4, "r": -0.1787, "p": 0.3278, "sig": false}, {"lag": 5, "r": 0.3505, "p": 0.0532, "sig": false}, {"lag": 6, "r": 0.0226, "p": 0.9057, "sig": false}], "corr_pares": {"dist_julg": {"r": 0.3844, "p": 0.0206, "sig": true}, "dist_baix": {"r": 0.3148, "p": 0.0615, "sig": false}, "julg_baix": {"r": 0.5721, "p": 0.0003, "sig": true}}}, "filas": {"2023": {"L": 3546, "lambda": 84.83, "mu": 91.92, "W_meses": 41.8, "W_anos": 3.48, "W_dias": 1274, "rho": 0.9229, "rho_pct": 92.3, "tc": 0.7079, "tc_pct": 70.8, "acervo_inicio": 3991, "superavit_pct": 8.3}, "2024": {"L": 3273, "lambda": 75.83, "mu": 88.17, "W_meses": 43.2, "W_anos": 3.6, "W_dias": 1316, "rho": 0.8601, "rho_pct": 86.0, "tc": 0.7063, "tc_pct": 70.6, "acervo_inicio": 3724, "superavit_pct": 16.3}, "2025": {"L": 3245, "lambda": 73.42, "mu": 82.67, "W_meses": 44.2, "W_anos": 3.68, "W_dias": 1348, "rho": 0.8881, "rho_pct": 88.8, "tc": 0.7409, "tc_pct": 74.1, "acervo_inicio": 3499, "superavit_pct": 12.6}}, "controle": {"dist": {"mu": 80.33, "sigma": 22.89, "ucl": 149.02, "lcl": 11.65, "ucl2": 126.12, "lcl2": 34.54, "data": [40.0, 80.0, 63.0, 64.0, 75.0, 78.0, 98.0, 141.0, 117.0, 102.0, 108.0, 52.0, 63.0, 56.0, 77.0, 93.0, 68.0, 90.0, 76.0, 62.0, 77.0, 69.0, 105.0, 74.0, 65.0, 60.0, 73.0, 97.0, 65.0, 49.0, 80.0, 87.0, 61.0, 97.0, 71.0, 76.0], "ooc": [], "warn": [7], "runs": []}, "julg": {"mu": 90.04, "sigma": 27.4, "ucl": 172.23, "lcl": 7.85, "ucl2": 144.83, "lcl2": 35.25, "data": [45.0, 99.0, 100.0, 104.0, 87.0, 133.0, 38.0, 156.0, 82.0, 122.0, 83.0, 54.0, 80.0, 86.0, 84.0, 108.0, 108.0, 90.0, 106.0, 78.0, 97.0, 84.0, 94.0, 43.0, 46.0, 97.0, 61.0, 72.0, 109.0, 89.0, 80.0, 99.0, 88.0, 92.0, 80.0, 79.0], "ooc": [], "warn": [7], "runs": []}, "baix": {"mu": 117.67, "sigma": 30.47, "ucl": 209.07, "lcl": 26.27, "ucl2": 178.6, "lcl2": 56.73, "data": [78.0, 121.0, 166.0, 117.0, 149.0, 157.0, 121.0, 159.0, 115.0, 130.0, 92.0, 58.0, 77.0, 88.0, 84.0, 145.0, 135.0, 114.0, 170.0, 131.0, 103.0, 110.0, 116.0, 88.0, 54.0, 79.0, 88.0, 74.0, 87.0, 137.0, 129.0, 67.0, 70.0, 137.0, 118.0, 95.0], "ooc": [], "warn": [24], "runs": [20, 21]}}, "regressao": {"dist": {"slope": -0.1865, "intercept": 81.4778, "r2": 0.0091, "p": 0.5802, "sig": false, "trend": "decrescente", "fitted": [81.3, 81.1, 80.9, 80.7, 80.5, 80.4, 80.2, 80.0, 79.8, 79.6, 79.4, 79.2, 79.1, 78.9, 78.7, 78.5, 78.3, 78.1, 77.9, 77.7, 77.6, 77.4, 77.2, 77.0, 76.8, 76.6, 76.4, 76.3, 76.1, 75.9, 75.7, 75.5, 75.3, 75.1, 75.0, 74.8], "forecast_2026": [{"pred": 74.6, "lo": 29.9, "hi": 119.3}, {"pred": 74.4, "lo": 29.5, "hi": 119.3}, {"pred": 74.2, "lo": 29.1, "hi": 119.3}, {"pred": 74.0, "lo": 28.7, "hi": 119.3}, {"pred": 73.8, "lo": 28.3, "hi": 119.3}, {"pred": 73.6, "lo": 27.9, "hi": 119.4}, {"pred": 73.5, "lo": 27.5, "hi": 119.4}, {"pred": 73.3, "lo": 27.0, "hi": 119.5}, {"pred": 73.1, "lo": 26.6, "hi": 119.6}, {"pred": 72.9, "lo": 26.1, "hi": 119.7}, {"pred": 72.7, "lo": 25.7, "hi": 119.7}, {"pred": 72.5, "lo": 25.2, "hi": 119.8}]}, "julg": {"slope": -0.3281, "intercept": 93.6524, "r2": 0.0199, "p": 0.4114, "sig": false, "trend": "decrescente", "fitted": [93.3, 93.0, 92.7, 92.3, 92.0, 91.7, 91.4, 91.0, 90.7, 90.4, 90.0, 89.7, 89.4, 89.1, 88.7, 88.4, 88.1, 87.7, 87.4, 87.1, 86.8, 86.4, 86.1, 85.8, 85.5, 85.1, 84.8, 84.5, 84.1, 83.8, 83.5, 83.2, 82.8, 82.5, 82.2, 81.8], "forecast_2026": [{"pred": 81.5, "lo": 28.7, "hi": 134.3}, {"pred": 81.2, "lo": 28.2, "hi": 134.2}, {"pred": 80.9, "lo": 27.6, "hi": 134.1}, {"pred": 80.5, "lo": 27.0, "hi": 134.1}, {"pred": 80.2, "lo": 26.4, "hi": 134.0}, {"pred": 79.9, "lo": 25.8, "hi": 133.9}, {"pred": 79.5, "lo": 25.2, "hi": 133.9}, {"pred": 79.2, "lo": 24.6, "hi": 133.9}, {"pred": 78.9, "lo": 23.9, "hi": 133.8}, {"pred": 78.6, "lo": 23.3, "hi": 133.8}, {"pred": 78.2, "lo": 22.6, "hi": 133.8}, {"pred": 77.9, "lo": 22.0, "hi": 133.8}]}, "baix": {"slope": -0.9234, "intercept": 127.0556, "r2": 0.0954, "p": 0.0668, "sig": false, "trend": "decrescente", "fitted": [126.1, 125.2, 124.3, 123.4, 122.4, 121.5, 120.6, 119.7, 118.7, 117.8, 116.9, 116.0, 115.1, 114.1, 113.2, 112.3, 111.4, 110.4, 109.5, 108.6, 107.7, 106.7, 105.8, 104.9, 104.0, 103.0, 102.1, 101.2, 100.3, 99.4, 98.4, 97.5, 96.6, 95.7, 94.7, 93.8], "forecast_2026": [{"pred": 92.9, "lo": 27.6, "hi": 158.1}, {"pred": 92.0, "lo": 26.4, "hi": 157.5}, {"pred": 91.0, "lo": 25.2, "hi": 156.9}, {"pred": 90.1, "lo": 24.0, "hi": 156.3}, {"pred": 89.2, "lo": 22.7, "hi": 155.7}, {"pred": 88.3, "lo": 21.5, "hi": 155.1}, {"pred": 87.3, "lo": 20.2, "hi": 154.5}, {"pred": 86.4, "lo": 18.9, "hi": 154.0}, {"pred": 85.5, "lo": 17.6, "hi": 153.4}, {"pred": 84.6, "lo": 16.3, "hi": 152.9}, {"pred": 83.7, "lo": 15.0, "hi": 152.3}, {"pred": 82.7, "lo": 13.6, "hi": 151.8}]}, "multipla": {"beta0": 57.423, "beta_t": -0.245, "beta_dist": 0.445, "r2": 0.1588, "fitted": [75.0, 92.5, 84.7, 84.9, 89.5, 90.6, 99.3, 118.2, 107.2, 100.3, 102.7, 77.6, 82.2, 78.9, 88.0, 94.9, 83.5, 93.0, 86.6, 80.1, 86.5, 82.7, 98.5, 84.4, 80.2, 77.7, 83.3, 93.7, 79.2, 71.9, 85.4, 88.3, 76.5, 92.2, 80.4, 82.4]}}};
 const RAW = {"anos": [2023, 2024, 2025], "meses": ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"], "dist": {"2023": [40, 80, 63, 64, 75, 78, 98, 141, 117, 102, 108, 52], "2024": [63, 56, 77, 93, 68, 90, 76, 62, 77, 69, 105, 74], "2025": [65, 60, 73, 97, 65, 49, 80, 87, 61, 97, 71, 76]}, "julg": {"2023": [45, 99, 100, 104, 87, 133, 38, 156, 82, 122, 83, 54], "2024": [80, 86, 84, 108, 108, 90, 106, 78, 97, 84, 94, 43], "2025": [46, 97, 61, 72, 109, 89, 80, 99, 88, 92, 80, 79]}, "baix": {"2023": [78, 121, 166, 117, 149, 157, 121, 159, 115, 130, 92, 58], "2024": [77, 88, 84, 145, 135, 114, 170, 131, 103, 110, 116, 88], "2025": [54, 79, 88, 74, 87, 137, 129, 67, 70, 137, 118, 95]}};
